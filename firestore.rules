@@ -1,0 +1,92 @@
+rules_version = '2';
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+    function isSignedIn() {
+      return request.auth != null;
+    }
+
+    function isOwner(userId) {
+      return isSignedIn() && request.auth.uid == userId;
+    }
+
+    // Existing authenticated app data.
+    match /users/{userId} {
+      allow read, write: if isSignedIn();
+    }
+
+    match /users/{userId}/{document=**} {
+      allow read, write: if isSignedIn();
+    }
+
+    match /users/{userId}/products/{productId} {
+      allow read, write: if isSignedIn();
+    }
+
+    // Collection-group reads used by the customer marketplace.
+    match /{path=**}/products/{productId} {
+      allow read, write: if isSignedIn();
+    }
+
+    match /marketplace/{productId} {
+      allow read, write: if isSignedIn();
+    }
+
+    match /marketplace/{document=**} {
+      allow read, write: if isSignedIn();
+    }
+
+    match /inquiries/{inquiryId} {
+      allow read, write: if isSignedIn();
+    }
+
+    match /inquiries/{document=**} {
+      allow read, write: if isSignedIn();
+    }
+
+    match /orders/{orderId} {
+      allow read, write: if isSignedIn();
+    }
+
+    match /orders/{document=**} {
+      allow read, write: if isSignedIn();
+    }
+
+    match /auctions/{auctionId} {
+      allow read: if isSignedIn();
+      allow create: if isSignedIn()
+        && request.resource.data.artisanId == request.auth.uid
+        && request.resource.data.status == 'open'
+        && request.resource.data.startingPrice is number
+        && request.resource.data.currentBid == request.resource.data.startingPrice
+        && request.resource.data.bidCount == 0;
+      allow update: if isSignedIn() && (
+        (
+          isOwner(resource.data.artisanId)
+          && request.resource.data.diff(resource.data).affectedKeys()
+              .hasOnly(['status', 'updatedAt'])
+          && request.resource.data.status == 'closed'
+        )
+        || (
+          resource.data.status == 'open'
+          && request.resource.data.status == 'open'
+          && request.resource.data.currentBid > resource.data.currentBid
+          && request.resource.data.bidCount == resource.data.bidCount + 1
+          && request.resource.data.artisanId == resource.data.artisanId
+          && request.resource.data.diff(resource.data).affectedKeys()
+              .hasOnly(['currentBid', 'bidCount', 'updatedAt'])
+        )
+      );
+      allow delete: if isOwner(resource.data.artisanId);
+
+      match /bids/{bidId} {
+        allow read: if isSignedIn();
+        allow create: if isSignedIn()
+          && request.resource.data.bidderId == request.auth.uid
+          && request.resource.data.amount is number
+          && request.resource.data.amount > 0;
+        allow update, delete: if false;
+      }
+    }
+  }
+}

@@ -1,0 +1,6 @@
+-- Firestore collections:
+-- users/{uid}
+-- users/{uid}/products/{productId}
+-- marketplace/{productId}
+-- inquiries/{inquiryId}
+-- orders/{orderId}
