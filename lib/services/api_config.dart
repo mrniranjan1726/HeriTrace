@@ -3,7 +3,7 @@ import 'package:flutter/foundation.dart';
 class ApiConfig {
   static const productionUrl = String.fromEnvironment(
     'HERITRACE_API_URL',
-    defaultValue: '',
+    defaultValue: 'https://heritrace-api.onrender.com',
   );
 
   static String get baseUrl {
