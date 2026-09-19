@@ -65,7 +65,8 @@ class _BusinessScreenState extends State<BusinessScreen> {
       final userDoc = await _db.collection('users').doc(user.uid).get();
       if (userDoc.exists) {
         final data = userDoc.data() ?? {};
-        artisanName = data['name']?.toString() ??
+        artisanName =
+            data['name']?.toString() ??
             data['displayName']?.toString() ??
             user.displayName ??
             'Master Artisan';
@@ -102,7 +103,8 @@ class _BusinessScreenState extends State<BusinessScreen> {
           bool belongsToArtisan = false;
           for (final item in rawItems) {
             if (item is! Map) continue;
-            final artisanId = item['artisanId']?.toString() ??
+            final artisanId =
+                item['artisanId']?.toString() ??
                 item['artisanID']?.toString() ??
                 item['ownerId']?.toString() ??
                 item['userId']?.toString();
@@ -190,7 +192,11 @@ class _BusinessScreenState extends State<BusinessScreen> {
                 color: _terracotta.withValues(alpha: 0.12),
                 borderRadius: BorderRadius.circular(10),
               ),
-              child: const Icon(Icons.handyman_rounded, color: _terracotta, size: 20),
+              child: const Icon(
+                Icons.handyman_rounded,
+                color: _terracotta,
+                size: 20,
+              ),
             ),
             const SizedBox(width: 10),
             const Text(
@@ -229,6 +235,8 @@ class _BusinessScreenState extends State<BusinessScreen> {
                 padding: const EdgeInsets.fromLTRB(20, 10, 20, 35),
                 children: [
                   _buildAtelierHeroBanner(),
+                  const SizedBox(height: 20),
+                  _buildLiveAuctionsSpotlightCard(),
                   const SizedBox(height: 24),
                   _buildStudioQuickActions(),
                   const SizedBox(height: 28),
@@ -280,7 +288,11 @@ class _BusinessScreenState extends State<BusinessScreen> {
                   shape: BoxShape.circle,
                   border: Border.all(color: const Color(0xFFE8C582), width: 2),
                 ),
-                child: const Icon(Icons.workspace_premium_rounded, color: Color(0xFFE8C582), size: 32),
+                child: const Icon(
+                  Icons.workspace_premium_rounded,
+                  color: Color(0xFFE8C582),
+                  size: 32,
+                ),
               ),
               const SizedBox(width: 16),
               Expanded(
@@ -299,7 +311,11 @@ class _BusinessScreenState extends State<BusinessScreen> {
                     const SizedBox(height: 3),
                     Row(
                       children: [
-                        const Icon(Icons.verified, color: Color(0xFFE8C582), size: 15),
+                        const Icon(
+                          Icons.verified,
+                          color: Color(0xFFE8C582),
+                          size: 15,
+                        ),
                         const SizedBox(width: 5),
                         Text(
                           'GI Heritage Verified Artisan',
@@ -328,13 +344,15 @@ class _BusinessScreenState extends State<BusinessScreen> {
               mainAxisSize: MainAxisSize.min,
               children: [
                 Container(
-                  width: 8,
-                  height: 8,
-                  decoration: const BoxDecoration(
-                    color: Color(0xFF4CAF50),
-                    shape: BoxShape.circle,
-                  ),
-                ).animate(onPlay: (c) => c.repeat(reverse: true)).scale(
+                      width: 8,
+                      height: 8,
+                      decoration: const BoxDecoration(
+                        color: Color(0xFF4CAF50),
+                        shape: BoxShape.circle,
+                      ),
+                    )
+                    .animate(onPlay: (c) => c.repeat(reverse: true))
+                    .scale(
                       begin: const Offset(0.8, 0.8),
                       end: const Offset(1.3, 1.3),
                     ),
@@ -353,6 +371,186 @@ class _BusinessScreenState extends State<BusinessScreen> {
         ],
       ),
     ).animate().fadeIn(duration: 500.ms).slideY(begin: -0.06, end: 0);
+  }
+
+  // ============================================================
+  // 1B. LIVE AUCTIONS SPOTLIGHT CARD
+  // ============================================================
+  Widget _buildLiveAuctionsSpotlightCard() {
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.all(22),
+      decoration: BoxDecoration(
+        borderRadius: BorderRadius.circular(26),
+        gradient: const LinearGradient(
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+          colors: [Color(0xFF2E1206), Color(0xFF4C1E0C), Color(0xFF1B3D2B)],
+        ),
+        border: Border.all(
+          color: const Color(0xFFE8C582).withValues(alpha: 0.5),
+          width: 1.2,
+        ),
+        boxShadow: [
+          BoxShadow(
+            color: const Color(0xFF381406).withValues(alpha: 0.35),
+            blurRadius: 22,
+            offset: const Offset(0, 10),
+          ),
+        ],
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              Container(
+                padding: const EdgeInsets.all(12),
+                decoration: BoxDecoration(
+                  color: const Color(0xFFE8C582).withValues(alpha: 0.18),
+                  borderRadius: BorderRadius.circular(16),
+                  border: Border.all(
+                    color: const Color(0xFFE8C582),
+                    width: 1.5,
+                  ),
+                ),
+                child: const Icon(
+                  Icons.gavel_rounded,
+                  color: Color(0xFFFFD54F),
+                  size: 28,
+                ),
+              ),
+              const SizedBox(width: 14),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Row(
+                      children: [
+                        Container(
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 7,
+                            vertical: 2,
+                          ),
+                          decoration: BoxDecoration(
+                            color: const Color(0xFFD32F2F),
+                            borderRadius: BorderRadius.circular(8),
+                          ),
+                          child: const Row(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              Icon(Icons.circle, color: Colors.white, size: 6),
+                              SizedBox(width: 4),
+                              Text(
+                                'LIVE NOW',
+                                style: TextStyle(
+                                  color: Colors.white,
+                                  fontSize: 8.5,
+                                  fontWeight: FontWeight.w900,
+                                  letterSpacing: 0.8,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                        const SizedBox(width: 8),
+                        const Text(
+                          'GLOBAL HERITAGE BIDDING',
+                          style: TextStyle(
+                            color: Color(0xFFFFD54F),
+                            fontSize: 10,
+                            fontWeight: FontWeight.w800,
+                            letterSpacing: 0.8,
+                          ),
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 5),
+                    const Text(
+                      'Rare Craft Auctions House',
+                      style: TextStyle(
+                        color: Colors.white,
+                        fontSize: 18,
+                        fontWeight: FontWeight.w900,
+                        letterSpacing: -0.3,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 14),
+          const Text(
+            'Present your finest handcrafted masterpieces to verified collectors worldwide. Set custom reserve prices, launch live bidding rooms, and earn premium fair-market value directly.',
+            style: TextStyle(
+              color: Color(0xFFEDE0D4),
+              fontSize: 12.5,
+              height: 1.45,
+            ),
+          ),
+          const SizedBox(height: 18),
+          Row(
+            children: [
+              Expanded(
+                flex: 3,
+                child: ElevatedButton.icon(
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: const Color(0xFFD39A3F),
+                    foregroundColor: const Color(0xFF1D2A24),
+                    elevation: 0,
+                    padding: const EdgeInsets.symmetric(vertical: 13),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(14),
+                    ),
+                  ),
+                  onPressed: () {
+                    Navigator.of(context).push(
+                      MaterialPageRoute(
+                        builder: (_) => const ArtisanAuctionsScreen(),
+                      ),
+                    );
+                  },
+                  icon: const Icon(Icons.add_circle_outline, size: 18),
+                  label: const Text(
+                    'Open Auction House',
+                    style: TextStyle(fontWeight: FontWeight.w900, fontSize: 13),
+                  ),
+                ),
+              ),
+              const SizedBox(width: 10),
+              Expanded(
+                flex: 2,
+                child: OutlinedButton.icon(
+                  style: OutlinedButton.styleFrom(
+                    foregroundColor: Colors.white,
+                    side: BorderSide(
+                      color: Colors.white.withValues(alpha: 0.45),
+                    ),
+                    padding: const EdgeInsets.symmetric(vertical: 13),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(14),
+                    ),
+                  ),
+                  onPressed: () {
+                    Navigator.of(context).push(
+                      MaterialPageRoute(
+                        builder: (_) => const ArtisanAuctionsScreen(),
+                      ),
+                    );
+                  },
+                  icon: const Icon(Icons.visibility_outlined, size: 16),
+                  label: const Text(
+                    'View Bids',
+                    style: TextStyle(fontWeight: FontWeight.w700, fontSize: 12),
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ],
+      ),
+    ).animate().fadeIn(duration: 450.ms).slideY(begin: 0.04, end: 0);
   }
 
   // ============================================================
@@ -402,7 +600,9 @@ class _BusinessScreenState extends State<BusinessScreen> {
                   subtitle: 'Studio lighting & framing',
                   color: _terracotta,
                   onTap: () => Navigator.of(context).push(
-                    MaterialPageRoute(builder: (_) => const ImageStudioScreen()),
+                    MaterialPageRoute(
+                      builder: (_) => const ImageStudioScreen(),
+                    ),
                   ),
                 ),
                 _actionCard(
@@ -429,7 +629,9 @@ class _BusinessScreenState extends State<BusinessScreen> {
                   subtitle: 'Real-time bidder room',
                   color: const Color(0xFF7A3E65),
                   onTap: () => Navigator.of(context).push(
-                    MaterialPageRoute(builder: (_) => const ArtisanAuctionsScreen()),
+                    MaterialPageRoute(
+                      builder: (_) => const ArtisanAuctionsScreen(),
+                    ),
                   ),
                 ),
               ],
@@ -490,7 +692,11 @@ class _BusinessScreenState extends State<BusinessScreen> {
               subtitle,
               maxLines: 1,
               overflow: TextOverflow.ellipsis,
-              style: TextStyle(color: _muted, fontSize: 11, fontWeight: FontWeight.w500),
+              style: TextStyle(
+                color: _muted,
+                fontSize: 11,
+                fontWeight: FontWeight.w500,
+              ),
             ),
           ],
         ),
@@ -603,7 +809,11 @@ class _BusinessScreenState extends State<BusinessScreen> {
               const Spacer(),
               Text(
                 title,
-                style: const TextStyle(color: _muted, fontSize: 11, fontWeight: FontWeight.w600),
+                style: const TextStyle(
+                  color: _muted,
+                  fontSize: 11,
+                  fontWeight: FontWeight.w600,
+                ),
               ),
             ],
           ),
@@ -620,7 +830,11 @@ class _BusinessScreenState extends State<BusinessScreen> {
           const SizedBox(height: 3),
           Text(
             subtitle,
-            style: TextStyle(color: accentColor, fontSize: 11, fontWeight: FontWeight.w700),
+            style: TextStyle(
+              color: accentColor,
+              fontSize: 11,
+              fontWeight: FontWeight.w700,
+            ),
           ),
         ],
       ),
@@ -667,11 +881,19 @@ class _BusinessScreenState extends State<BusinessScreen> {
             child: Center(
               child: Column(
                 children: [
-                  Icon(Icons.brush_outlined, size: 44, color: _terracotta.withValues(alpha: 0.6)),
+                  Icon(
+                    Icons.brush_outlined,
+                    size: 44,
+                    color: _terracotta.withValues(alpha: 0.6),
+                  ),
                   const SizedBox(height: 12),
                   const Text(
                     'No crafts published yet',
-                    style: TextStyle(fontSize: 16, fontWeight: FontWeight.w800, color: _ink),
+                    style: TextStyle(
+                      fontSize: 16,
+                      fontWeight: FontWeight.w800,
+                      color: _ink,
+                    ),
                   ),
                   const SizedBox(height: 6),
                   const Text(
@@ -682,7 +904,9 @@ class _BusinessScreenState extends State<BusinessScreen> {
                   const SizedBox(height: 18),
                   FilledButton.icon(
                     onPressed: () => Navigator.of(context).push(
-                      MaterialPageRoute(builder: (_) => const AddProductScreen()),
+                      MaterialPageRoute(
+                        builder: (_) => const AddProductScreen(),
+                      ),
                     ),
                     icon: const Icon(Icons.add),
                     label: const Text('Publish First Craft'),
@@ -717,7 +941,9 @@ class _BusinessScreenState extends State<BusinessScreen> {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       ClipRRect(
-                        borderRadius: const BorderRadius.vertical(top: Radius.circular(20)),
+                        borderRadius: const BorderRadius.vertical(
+                          top: Radius.circular(20),
+                        ),
                         child: SizedBox(
                           height: 110,
                           width: double.infinity,
@@ -725,7 +951,11 @@ class _BusinessScreenState extends State<BusinessScreen> {
                               ? Image.network(imgUrl, fit: BoxFit.cover)
                               : Container(
                                   color: _forest.withValues(alpha: 0.1),
-                                  child: const Icon(Icons.palette_outlined, color: _forest, size: 36),
+                                  child: const Icon(
+                                    Icons.palette_outlined,
+                                    color: _forest,
+                                    size: 36,
+                                  ),
                                 ),
                         ),
                       ),
@@ -738,17 +968,28 @@ class _BusinessScreenState extends State<BusinessScreen> {
                               name,
                               maxLines: 1,
                               overflow: TextOverflow.ellipsis,
-                              style: const TextStyle(fontWeight: FontWeight.w800, fontSize: 14, color: _ink),
+                              style: const TextStyle(
+                                fontWeight: FontWeight.w800,
+                                fontSize: 14,
+                                color: _ink,
+                              ),
                             ),
                             const SizedBox(height: 3),
                             Text(
                               category,
-                              style: const TextStyle(color: _muted, fontSize: 11),
+                              style: const TextStyle(
+                                color: _muted,
+                                fontSize: 11,
+                              ),
                             ),
                             const SizedBox(height: 8),
                             Text(
                               '₹${price.toStringAsFixed(0)}',
-                              style: const TextStyle(fontWeight: FontWeight.w900, color: _terracotta, fontSize: 15),
+                              style: const TextStyle(
+                                fontWeight: FontWeight.w900,
+                                color: _terracotta,
+                                fontSize: 15,
+                              ),
                             ),
                           ],
                         ),
@@ -809,7 +1050,10 @@ class _BusinessScreenState extends State<BusinessScreen> {
                     children: [
                       Text(
                         'Awaiting new patron orders',
-                        style: TextStyle(fontWeight: FontWeight.w700, color: _ink),
+                        style: TextStyle(
+                          fontWeight: FontWeight.w700,
+                          color: _ink,
+                        ),
                       ),
                       SizedBox(height: 3),
                       Text(
@@ -826,7 +1070,8 @@ class _BusinessScreenState extends State<BusinessScreen> {
           ...recentOrders.map((order) {
             final total = _toDouble(order['total']);
             final status = order['status']?.toString() ?? 'pending';
-            final orderId = order['orderId'] ?? order['id'] ?? 'HeriTrace Order';
+            final orderId =
+                order['orderId'] ?? order['id'] ?? 'HeriTrace Order';
 
             return Container(
               margin: const EdgeInsets.only(bottom: 12),
@@ -844,7 +1089,11 @@ class _BusinessScreenState extends State<BusinessScreen> {
                       color: _forest.withValues(alpha: 0.1),
                       borderRadius: BorderRadius.circular(12),
                     ),
-                    child: const Icon(Icons.shopping_bag_outlined, color: _forest, size: 20),
+                    child: const Icon(
+                      Icons.shopping_bag_outlined,
+                      color: _forest,
+                      size: 20,
+                    ),
                   ),
                   const SizedBox(width: 14),
                   Expanded(
@@ -855,12 +1104,20 @@ class _BusinessScreenState extends State<BusinessScreen> {
                           'Order #$orderId',
                           maxLines: 1,
                           overflow: TextOverflow.ellipsis,
-                          style: const TextStyle(fontWeight: FontWeight.w800, fontSize: 14, color: _ink),
+                          style: const TextStyle(
+                            fontWeight: FontWeight.w800,
+                            fontSize: 14,
+                            color: _ink,
+                          ),
                         ),
                         const SizedBox(height: 4),
                         Text(
                           '₹${total.toStringAsFixed(0)} · Direct Payment',
-                          style: const TextStyle(fontWeight: FontWeight.w700, color: _terracotta, fontSize: 13),
+                          style: const TextStyle(
+                            fontWeight: FontWeight.w700,
+                            color: _terracotta,
+                            fontSize: 13,
+                          ),
                         ),
                       ],
                     ),
@@ -939,7 +1196,11 @@ class _BusinessScreenState extends State<BusinessScreen> {
               color: _gold.withValues(alpha: 0.2),
               shape: BoxShape.circle,
             ),
-            child: const Icon(Icons.lightbulb_outline_rounded, color: Color(0xFF8C5C00), size: 22),
+            child: const Icon(
+              Icons.lightbulb_outline_rounded,
+              color: Color(0xFF8C5C00),
+              size: 22,
+            ),
           ),
           const SizedBox(width: 14),
           Expanded(
@@ -948,7 +1209,11 @@ class _BusinessScreenState extends State<BusinessScreen> {
               children: [
                 const Text(
                   'Heritage Market Advisory',
-                  style: TextStyle(fontWeight: FontWeight.w800, fontSize: 15, color: _ink),
+                  style: TextStyle(
+                    fontWeight: FontWeight.w800,
+                    fontSize: 15,
+                    color: _ink,
+                  ),
                 ),
                 const SizedBox(height: 6),
                 const Text(

@@ -7,6 +7,7 @@ import 'marketplace_screen.dart';
 import 'business_screen.dart';
 import 'image_studio_screen.dart';
 import 'artisan_profile_screen.dart';
+import 'artisan_auctions_screen.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -28,6 +29,7 @@ class _HomeScreenState extends State<HomeScreen> {
       BusinessScreen(),
       ProductsScreen(),
       AddProductScreen(),
+      ArtisanAuctionsScreen(),
       PricingScreen(),
       MarketplaceScreen(),
       ArtisanProfileScreen(),
@@ -129,6 +131,11 @@ class _HomeScreenState extends State<HomeScreen> {
             icon: Icon(Icons.add_circle_outline),
             selectedIcon: Icon(Icons.add_circle, color: Color(0xFFA24B2A)),
             label: 'Create',
+          ),
+          NavigationDestination(
+            icon: Icon(Icons.gavel_outlined),
+            selectedIcon: Icon(Icons.gavel, color: Color(0xFFA24B2A)),
+            label: 'Auctions',
           ),
           NavigationDestination(
             icon: Icon(Icons.balance_outlined),
