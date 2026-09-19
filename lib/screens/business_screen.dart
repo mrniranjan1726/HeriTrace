@@ -186,6 +186,7 @@ class _BusinessScreenState extends State<BusinessScreen> {
         elevation: 0,
         centerTitle: false,
         title: Row(
+          mainAxisSize: MainAxisSize.min,
           children: [
             Container(
               padding: const EdgeInsets.all(7),
@@ -201,10 +202,10 @@ class _BusinessScreenState extends State<BusinessScreen> {
             ),
             const SizedBox(width: 10),
             const Text(
-              'Artisan Atelier & Studio',
+              'Artisan Atelier',
               style: TextStyle(
                 color: _ink,
-                fontSize: 19,
+                fontSize: 18,
                 fontWeight: FontWeight.w900,
                 letterSpacing: -0.4,
               ),
@@ -213,27 +214,11 @@ class _BusinessScreenState extends State<BusinessScreen> {
         ),
         actions: [
           IconButton(
-            tooltip: 'Artisan Community',
-            onPressed: () => Navigator.pushNamed(context, '/artisan-community'),
-            icon: const Icon(Icons.forum_rounded, color: _forest),
-          ),
-          IconButton(
-            tooltip: 'Heritage News Gazette',
-            onPressed: () => Navigator.pushNamed(context, '/heritage-news'),
-            icon: const Icon(Icons.newspaper_rounded, color: _terracotta),
-          ),
-          IconButton(
-            tooltip: 'Live Auctions',
-            onPressed: () => Navigator.of(context).push(
-              MaterialPageRoute(builder: (_) => const ArtisanAuctionsScreen()),
-            ),
-            icon: const Icon(Icons.gavel_rounded, color: _gold),
-          ),
-          IconButton(
             tooltip: 'Refresh Atelier',
             onPressed: loading ? null : loadBusinessData,
             icon: const Icon(Icons.refresh_rounded, color: _ink),
           ),
+          const SizedBox(width: 6),
         ],
       ),
       body: loading
@@ -243,7 +228,7 @@ class _BusinessScreenState extends State<BusinessScreen> {
               color: _terracotta,
               child: ListView(
                 physics: const BouncingScrollPhysics(),
-                padding: const EdgeInsets.fromLTRB(18, 10, 18, 35),
+                padding: const EdgeInsets.fromLTRB(18, 10, 18, 95),
                 children: [
                   _buildAtelierHeroBanner(),
                   const SizedBox(height: 18),
@@ -637,7 +622,7 @@ class _BusinessScreenState extends State<BusinessScreen> {
           ),
           const SizedBox(height: 20),
           Container(
-            padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
+            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 7),
             decoration: BoxDecoration(
               color: Colors.white.withValues(alpha: 0.12),
               borderRadius: BorderRadius.circular(30),
@@ -660,12 +645,16 @@ class _BusinessScreenState extends State<BusinessScreen> {
                       end: const Offset(1.3, 1.3),
                     ),
                 const SizedBox(width: 8),
-                const Text(
-                  'Atelier Active • Accepting Custom Patron Commissions',
-                  style: TextStyle(
-                    color: Colors.white,
-                    fontSize: 12,
-                    fontWeight: FontWeight.w600,
+                const Flexible(
+                  child: Text(
+                    'Atelier Active • Accepting Commissions',
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                    style: TextStyle(
+                      color: Colors.white,
+                      fontSize: 11,
+                      fontWeight: FontWeight.w700,
+                    ),
                   ),
                 ),
               ],
