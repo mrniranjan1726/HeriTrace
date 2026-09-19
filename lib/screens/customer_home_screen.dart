@@ -18,15 +18,15 @@ class CustomerHomeScreen extends StatefulWidget {
 
 class _CustomerHomeScreenState extends State<CustomerHomeScreen>
     with SingleTickerProviderStateMixin {
-  // Brand & Flipkart-style Design Palette
-  static const Color _purpleHeaderStart = Color(0xFF7B00C7);
-  static const Color _purpleHeaderEnd = Color(0xFF9E00EE);
-  static const Color _purpleDarkPill = Color(0xFF55008E);
-  static const Color _flipkartYellow = Color(0xFFFFE500);
-  static const Color _bodyBg = Color(0xFFF1F2F4);
-  static const Color _primaryText = Color(0xFF1E1E24);
-  static const Color _secondaryText = Color(0xFF71747E);
-  static const Color _discountGreen = Color(0xFF26A541);
+  // HeriTrace Signature Luxury Brand Palette (Cohesive Across Entire App)
+  static const Color _purpleHeaderStart = Color(0xFF7A2012); // Royal Terracotta Silk
+  static const Color _purpleHeaderEnd = Color(0xFF9E341B);   // Warm Heirloom Crimson
+  static const Color _purpleDarkPill = Color(0xFF5A1409);     // Wine Terracotta Capsule
+  static const Color _flipkartYellow = Color(0xFFD4A056);   // Antique Heirloom Gold
+  static const Color _bodyBg = Color(0xFFF5EFE6);           // Warm Artisanal Linen
+  static const Color _primaryText = Color(0xFF1D2A24);      // Deep Charcoal Ink
+  static const Color _secondaryText = Color(0xFF6B746E);    // Muted Heritage Sage
+  static const Color _discountGreen = Color(0xFF1E5638);    // Imperial Forest Green
 
   final TextEditingController _searchController = TextEditingController();
   final PageController _carouselPageController = PageController();
@@ -815,7 +815,7 @@ class _CustomerHomeScreenState extends State<CustomerHomeScreen>
   }
 
   // ============================================================
-  // CAMPAIGN MEGA BANNER ("THE BIG HERITAGE FESTIVAL")
+  // CAMPAIGN MEGA BANNER ("FESTIVAL OF LIVING HERITAGE")
   // ============================================================
 
   Widget _buildMegaCampaignBanner() {
@@ -825,11 +825,11 @@ class _CustomerHomeScreenState extends State<CustomerHomeScreen>
       decoration: BoxDecoration(
         borderRadius: BorderRadius.circular(16),
         gradient: const LinearGradient(
-          colors: [Color(0xFF7209B7), Color(0xFF3F37C9), Color(0xFF4361EE)],
+          colors: [Color(0xFF6B1B0E), Color(0xFF9E341B), Color(0xFF3D0C07)],
         ),
         boxShadow: [
           BoxShadow(
-            color: const Color(0xFF3F37C9).withValues(alpha: 0.3),
+            color: const Color(0xFF6B1B0E).withValues(alpha: 0.3),
             blurRadius: 10,
             offset: const Offset(0, 4),
           ),
@@ -875,27 +875,27 @@ class _CustomerHomeScreenState extends State<CustomerHomeScreen>
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: const [
                         Text(
-                          'THE BIG',
+                          'LIVING',
                           style: TextStyle(
-                            fontSize: 8,
+                            fontSize: 7.5,
                             fontWeight: FontWeight.w900,
-                            color: Color(0xFF1B1464),
+                            color: Color(0xFF3D0C07),
                           ),
                         ),
                         Text(
                           'HERITAGE',
                           style: TextStyle(
-                            fontSize: 8,
+                            fontSize: 7.5,
                             fontWeight: FontWeight.w900,
-                            color: Color(0xFFD50000),
+                            color: Color(0xFF8A2B14),
                           ),
                         ),
                         Text(
-                          'DAYS',
+                          'FESTIVAL',
                           style: TextStyle(
-                            fontSize: 8,
+                            fontSize: 7.5,
                             fontWeight: FontWeight.w900,
-                            color: Color(0xFF1B1464),
+                            color: Color(0xFF3D0C07),
                           ),
                         ),
                       ],
@@ -911,17 +911,17 @@ class _CustomerHomeScreenState extends State<CustomerHomeScreen>
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       const Text(
-                        'STARTS ON 9TH OCT',
+                        'FESTIVAL OF LIVING HERITAGE',
                         style: TextStyle(
                           color: Colors.white,
-                          fontSize: 16,
+                          fontSize: 14.5,
                           fontWeight: FontWeight.w900,
-                          letterSpacing: 0.5,
+                          letterSpacing: 0.3,
                         ),
                       ),
                       const SizedBox(height: 3),
                       const Text(
-                        'Early Access for HeriTrace Club & Artisans Direct',
+                        'Direct Master Artisan GI Masterpieces • 100% Traceable',
                         style: TextStyle(
                           color: Colors.white70,
                           fontSize: 10,
@@ -942,18 +942,18 @@ class _CustomerHomeScreenState extends State<CustomerHomeScreen>
                           mainAxisSize: MainAxisSize.min,
                           children: [
                             Text(
-                              'Explore Offers',
+                              'Explore Heirlooms',
                               style: TextStyle(
                                 fontSize: 10,
                                 fontWeight: FontWeight.w800,
-                                color: Color(0xFF3F37C9),
+                                color: Color(0xFF7A2012),
                               ),
                             ),
                             SizedBox(width: 4),
                             Icon(
                               Icons.arrow_forward,
                               size: 11,
-                              color: Color(0xFF3F37C9),
+                              color: Color(0xFF7A2012),
                             ),
                           ],
                         ),
@@ -972,7 +972,7 @@ class _CustomerHomeScreenState extends State<CustomerHomeScreen>
                   ),
                   child: const Center(
                     child: Icon(
-                      Icons.military_tech_outlined,
+                      Icons.workspace_premium_rounded,
                       color: _flipkartYellow,
                       size: 28,
                     ),
@@ -1203,7 +1203,7 @@ class _CustomerHomeScreenState extends State<CustomerHomeScreen>
                   style: TextStyle(
                     fontSize: 12,
                     fontWeight: FontWeight.w800,
-                    color: Color(0xFF2874F0),
+                    color: _purpleHeaderStart,
                   ),
                 ),
               ],
@@ -1411,7 +1411,7 @@ class _CustomerHomeScreenState extends State<CustomerHomeScreen>
                     Icon(
                       Icons.newspaper_rounded,
                       size: 14,
-                      color: Color(0xFF2874F0),
+                      color: _purpleHeaderStart,
                     ),
                     SizedBox(width: 4),
                     Text(
@@ -1419,7 +1419,7 @@ class _CustomerHomeScreenState extends State<CustomerHomeScreen>
                       style: TextStyle(
                         fontSize: 12,
                         fontWeight: FontWeight.w800,
-                        color: Color(0xFF2874F0),
+                        color: _purpleHeaderStart,
                       ),
                     ),
                   ],
@@ -1861,7 +1861,7 @@ class _CustomerHomeScreenState extends State<CustomerHomeScreen>
                 Icon(
                   isSelected ? activeIcon : icon,
                   color: isSelected
-                      ? const Color(0xFF2874F0)
+                      ? _purpleHeaderStart
                       : const Color(0xFF757575),
                   size: 24,
                 ),
@@ -1902,7 +1902,7 @@ class _CustomerHomeScreenState extends State<CustomerHomeScreen>
                 fontSize: 10,
                 fontWeight: isSelected ? FontWeight.w800 : FontWeight.w500,
                 color: isSelected
-                    ? const Color(0xFF2874F0)
+                    ? _purpleHeaderStart
                     : const Color(0xFF757575),
               ),
             ),
