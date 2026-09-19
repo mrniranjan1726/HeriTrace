@@ -44,7 +44,6 @@ class _AddProductScreenState extends State<AddProductScreen> {
   Uint8List? _selectedImageBytes;
   Uint8List? _enhancedImageBytes;
 
-  XFile? _selectedImage;
 
   bool _isListening = false;
   bool _speechAvailable = false;
@@ -160,7 +159,6 @@ class _AddProductScreenState extends State<AddProductScreen> {
       if (!mounted) return;
 
       setState(() {
-        _selectedImage = image;
         _selectedImageBytes = bytes;
         _enhancedImageBytes = null;
       });
@@ -183,7 +181,6 @@ class _AddProductScreenState extends State<AddProductScreen> {
       if (!mounted) return;
 
       setState(() {
-        _selectedImage = image;
         _selectedImageBytes = bytes;
         _enhancedImageBytes = null;
       });
@@ -294,12 +291,22 @@ class _AddProductScreenState extends State<AddProductScreen> {
     });
 
     try {
+      final user = FirebaseAuth.instance.currentUser;
+      if (user == null) {
+        _showMessage('Please login first to publish products.');
+        return;
+      }
+
       String? imageUrl;
       if (_selectedImageBytes != null) {
-        imageUrl = await _firebaseService.uploadImage(
-          _selectedImageBytes!,
-          'products/${FirebaseAuth.instance.currentUser!.uid}/${_uuid.v4()}.jpg',
-        );
+        try {
+          imageUrl = await _firebaseService.uploadImage(
+            _selectedImageBytes!,
+            'products/${user.uid}/${_uuid.v4()}.jpg',
+          );
+        } catch (imgError) {
+          debugPrint('Image upload warning: $imgError');
+        }
       }
 
       final product = Product(
@@ -323,14 +330,15 @@ class _AddProductScreenState extends State<AddProductScreen> {
 
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
-          content: Text('Product published successfully'),
+          content: Text('Product published successfully!'),
           behavior: SnackBarBehavior.floating,
         ),
       );
 
       Navigator.pop(context);
     } catch (e) {
-      _showMessage('Could not publish product. Please try again.');
+      debugPrint('Error publishing product: $e');
+      _showMessage('Could not publish product: ${e.toString().replaceFirst('Exception: ', '')}');
     } finally {
       if (mounted) {
         setState(() {
