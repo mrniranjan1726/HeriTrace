@@ -347,17 +347,26 @@ class _DashboardScreenState extends State<DashboardScreen> {
   }
 
   Widget _buildStats() {
+    const stats = [
+      ('120+', 'Heritage sites'),
+      ('48', 'Cultural stories'),
+      ('12', 'Regions mapped'),
+      ('860+', 'Contributors'),
+    ];
     return Padding(
       padding: const EdgeInsets.fromLTRB(20, 26, 20, 8),
       child: Wrap(
-        spacing: 0,
+        spacing: 12,
         runSpacing: 14,
-        children: const [
-          _Stat(value: '120+', label: 'Heritage sites'),
-          _Stat(value: '48', label: 'Cultural stories'),
-          _Stat(value: '12', label: 'Regions mapped'),
-          _Stat(value: '860+', label: 'Contributors'),
-        ],
+        children: stats.asMap().entries.map((entry) {
+          final i = entry.key;
+          final s = entry.value;
+          return _Stat(value: s.$1, label: s.$2)
+              .animate()
+              .fadeIn(delay: Duration(milliseconds: 120 * i), duration: 500.ms)
+              .scale(begin: const Offset(0.9, 0.9))
+              .slideX(begin: 0.1, end: 0);
+        }).toList(),
       ),
     );
   }

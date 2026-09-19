@@ -1,5 +1,6 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_animate/flutter_animate.dart';
 
 class MarketplaceScreen extends StatefulWidget {
   const MarketplaceScreen({super.key});
@@ -214,12 +215,25 @@ class _MarketplaceScreenState extends State<MarketplaceScreen> {
             return CustomScrollView(
               slivers: [
                 SliverToBoxAdapter(
-                  child: _buildHeader(context, catalog.length),
+                  child: _buildHeader(context, catalog.length)
+                      .animate()
+                      .fadeIn(duration: 500.ms, curve: Curves.easeOutCubic)
+                      .slideY(begin: -0.06, end: 0),
                 ),
 
-                SliverToBoxAdapter(child: _buildSearchSection()),
+                SliverToBoxAdapter(
+                  child: _buildSearchSection()
+                      .animate(delay: 100.ms)
+                      .fadeIn(duration: 450.ms)
+                      .slideY(begin: 0.05, end: 0),
+                ),
 
-                SliverToBoxAdapter(child: _buildCategories()),
+                SliverToBoxAdapter(
+                  child: _buildCategories()
+                      .animate(delay: 160.ms)
+                      .fadeIn(duration: 450.ms)
+                      .slideX(begin: 0.05, end: 0),
+                ),
 
                 SliverToBoxAdapter(
                   child: Padding(
@@ -278,7 +292,10 @@ class _MarketplaceScreenState extends State<MarketplaceScreen> {
                               onTap: () {
                                 _showProductDetails(context, product);
                               },
-                            );
+                            )
+                                .animate(delay: Duration(milliseconds: 50 * (index % 8)))
+                                .fadeIn(duration: 450.ms, curve: Curves.easeOutCubic)
+                                .slideY(begin: 0.08, end: 0, curve: Curves.easeOutCubic);
                           }, childCount: products.length),
                           gridDelegate:
                               SliverGridDelegateWithFixedCrossAxisCount(
