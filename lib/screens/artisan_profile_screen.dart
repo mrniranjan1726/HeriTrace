@@ -374,6 +374,12 @@ class _ArtisanProfileScreenState extends State<ArtisanProfileScreen> {
     }
   }
 
+  Future<void> _logout() async {
+    await _auth.signOut();
+    if (!mounted) return;
+    Navigator.pushNamedAndRemoveUntil(context, '/login', (_) => false);
+  }
+
   void _cancelEdit() {
     _nameController.text = _name;
     _craftController.text = _craft;
@@ -423,6 +429,11 @@ class _ArtisanProfileScreenState extends State<ArtisanProfileScreen> {
               },
               icon: const Icon(Icons.edit_outlined),
             ),
+          IconButton(
+            tooltip: 'Log out',
+            onPressed: _loading ? null : _logout,
+            icon: const Icon(Icons.logout_rounded),
+          ),
         ],
       ),
 
@@ -474,6 +485,28 @@ class _ArtisanProfileScreenState extends State<ArtisanProfileScreen> {
                         _buildAccountSection(),
 
                         const SizedBox(height: 30),
+
+                        SizedBox(
+                          width: double.infinity,
+                          height: 52,
+                          child: OutlinedButton.icon(
+                            onPressed: _loading ? null : _logout,
+                            style: OutlinedButton.styleFrom(
+                              foregroundColor: const Color(0xFFB3261E),
+                              side: const BorderSide(color: Color(0xFFE4A6A6)),
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(15),
+                              ),
+                            ),
+                            icon: const Icon(Icons.logout_rounded),
+                            label: const Text(
+                              'Log out of HeriTrace',
+                              style: TextStyle(fontWeight: FontWeight.w800),
+                            ),
+                          ),
+                        ),
+
+                        const SizedBox(height: 18),
                       ],
                     ),
                   ),
@@ -488,7 +521,7 @@ class _ArtisanProfileScreenState extends State<ArtisanProfileScreen> {
   // ============================================================
 
   Widget _buildProfileHeader() {
-    const primary = Color(0xFF176B5B);
+    const primary = Color(0xFFA24B2A);
 
     return Container(
       width: double.infinity,
@@ -636,7 +669,7 @@ class _ArtisanProfileScreenState extends State<ArtisanProfileScreen> {
             icon: Icons.inventory_2_outlined,
             title: 'Products',
             value: _productCount.toString(),
-            color: const Color(0xFF176B5B),
+            color: const Color(0xFFA24B2A),
           ),
 
           _statCard(
@@ -771,7 +804,7 @@ class _ArtisanProfileScreenState extends State<ArtisanProfileScreen> {
 
                 child: const Icon(
                   Icons.analytics_outlined,
-                  color: Color(0xFF176B5B),
+                  color: Color(0xFFA24B2A),
                 ),
               ),
 
@@ -815,7 +848,7 @@ class _ArtisanProfileScreenState extends State<ArtisanProfileScreen> {
                   title: 'Total Revenue',
                   value: '₹${_totalRevenue.toStringAsFixed(0)}',
                   subtitle: 'Excluding cancelled orders',
-                  color: const Color(0xFF176B5B),
+                  color: const Color(0xFFA24B2A),
                 ),
 
                 _analyticsCard(
@@ -1079,7 +1112,7 @@ class _ArtisanProfileScreenState extends State<ArtisanProfileScreen> {
               const Icon(
                 Icons.inventory_2_outlined,
                 size: 22,
-                color: Color(0xFF176B5B),
+                color: Color(0xFFA24B2A),
               ),
 
               const SizedBox(width: 9),
@@ -1110,7 +1143,7 @@ class _ArtisanProfileScreenState extends State<ArtisanProfileScreen> {
                   '$_productCount items',
 
                   style: const TextStyle(
-                    color: Color(0xFF176B5B),
+                    color: Color(0xFFA24B2A),
                     fontSize: 12,
                     fontWeight: FontWeight.w800,
                   ),
@@ -1214,7 +1247,7 @@ class _ArtisanProfileScreenState extends State<ArtisanProfileScreen> {
 
     final description = (data['description'] ?? '').toString();
 
-    final imageUrl = (data['imageUrl'] ?? '').toString();
+    final imageUrl = _productImageUrl(data);
 
     double price = 0;
 
@@ -1301,7 +1334,7 @@ class _ArtisanProfileScreenState extends State<ArtisanProfileScreen> {
                       category,
 
                       style: const TextStyle(
-                        color: Color(0xFF176B5B),
+                        color: Color(0xFFA24B2A),
                         fontSize: 11,
                         fontWeight: FontWeight.w800,
                       ),
@@ -1332,7 +1365,7 @@ class _ArtisanProfileScreenState extends State<ArtisanProfileScreen> {
                     style: const TextStyle(
                       fontSize: 17,
                       fontWeight: FontWeight.w900,
-                      color: Color(0xFF176B5B),
+                      color: Color(0xFFA24B2A),
                     ),
                   ),
                 ],
@@ -1352,6 +1385,35 @@ class _ArtisanProfileScreenState extends State<ArtisanProfileScreen> {
         child: Icon(Icons.image_outlined, size: 32, color: Color(0xFF7B8984)),
       ),
     );
+  }
+
+  String _productImageUrl(Map<String, dynamic> data) {
+    final storedUrl = (data['imageUrl'] ?? '').toString().trim();
+    if (storedUrl.isNotEmpty) return storedUrl;
+
+    final name = (data['name'] ?? '').toString().toLowerCase();
+    final category = (data['category'] ?? '').toString().toLowerCase();
+    if (name.contains('saree') ||
+        name.contains('ikat') ||
+        category.contains('textile')) {
+      return 'https://utkalikaodisha.com/wp-content/uploads/2023/01/TRI3D__Smb_3__silk_set172_srijla_front__2023-1-4-13-27-43__1200X1200_11zon.jpg';
+    }
+    if (name.contains('kurta') || name.contains('dress')) {
+      return 'https://5.imimg.com/data5/ECOM/Default/2023/8/331186386/FZ/KN/HT/67173095/1690936764682-sku-3379-0-1000x1000.jpg';
+    }
+    if (name.contains('basket') || category.contains('bamboo')) {
+      return 'https://images.unsplash.com/photo-1590874103328-eac38a683ce7?auto=format&fit=crop&w=500&q=80';
+    }
+    if (category.contains('pottery')) {
+      return 'https://images.unsplash.com/photo-1610701596007-11502861dcfa?auto=format&fit=crop&w=500&q=80';
+    }
+    if (category.contains('jewellery') || category.contains('jewelry')) {
+      return 'https://images.unsplash.com/photo-1535632066927-ab7c9ab60908?auto=format&fit=crop&w=500&q=80';
+    }
+    if (category.contains('painting') || name.contains('pattachitra')) {
+      return 'https://images.unsplash.com/photo-1579783902614-a3fb3927b6a5?auto=format&fit=crop&w=500&q=80';
+    }
+    return 'https://images.unsplash.com/photo-1549490349-8643362247b5?auto=format&fit=crop&w=500&q=80';
   }
 
   // ============================================================
@@ -1698,7 +1760,7 @@ class _ArtisanProfileScreenState extends State<ArtisanProfileScreen> {
                 style: const TextStyle(
                   fontSize: 16,
                   fontWeight: FontWeight.w900,
-                  color: Color(0xFF176B5B),
+                  color: Color(0xFFA24B2A),
                 ),
               ),
 
@@ -1834,7 +1896,7 @@ class _ArtisanProfileScreenState extends State<ArtisanProfileScreen> {
         children: [
           Row(
             children: [
-              Icon(icon, size: 22, color: const Color(0xFF176B5B)),
+              Icon(icon, size: 22, color: const Color(0xFFA24B2A)),
 
               const SizedBox(width: 9),
 
@@ -1861,7 +1923,7 @@ class _ArtisanProfileScreenState extends State<ArtisanProfileScreen> {
   Widget _infoRow(IconData icon, String title, String value) {
     return Row(
       children: [
-        Icon(icon, size: 21, color: const Color(0xFF176B5B)),
+        Icon(icon, size: 21, color: const Color(0xFFA24B2A)),
 
         const SizedBox(width: 13),
 
@@ -1903,7 +1965,7 @@ class _ArtisanProfileScreenState extends State<ArtisanProfileScreen> {
   // ============================================================
 
   Widget _buildEditSection() {
-    const primary = Color(0xFF176B5B);
+    const primary = Color(0xFFA24B2A);
 
     return _sectionCard(
       title: 'Edit Profile',

@@ -36,6 +36,10 @@ class _AddProductScreenState extends State<AddProductScreen> {
   final TextEditingController _categoryController = TextEditingController(
     text: 'Handicraft',
   );
+  final TextEditingController _originController = TextEditingController();
+  final TextEditingController _materialController = TextEditingController();
+  final TextEditingController _techniqueController = TextEditingController();
+  final TextEditingController _storyController = TextEditingController();
 
   Uint8List? _selectedImageBytes;
   Uint8List? _enhancedImageBytes;
@@ -263,6 +267,10 @@ class _AddProductScreenState extends State<AddProductScreen> {
     final description = _descriptionController.text.trim();
     final priceText = _priceController.text.trim();
     final category = _categoryController.text.trim();
+    final origin = _originController.text.trim();
+    final material = _materialController.text.trim();
+    final technique = _techniqueController.text.trim();
+    final story = _storyController.text.trim();
 
     if (name.isEmpty) {
       _showMessage('Please enter product name.');
@@ -301,6 +309,10 @@ class _AddProductScreenState extends State<AddProductScreen> {
         price: price,
         category: category.isEmpty ? 'Handicraft' : category,
         imageUrl: imageUrl,
+        origin: origin,
+        material: material,
+        technique: technique,
+        tradition: story,
       );
 
       await _firebaseService.saveProduct(product);
@@ -543,6 +555,10 @@ class _AddProductScreenState extends State<AddProductScreen> {
     _descriptionController.dispose();
     _priceController.dispose();
     _categoryController.dispose();
+    _originController.dispose();
+    _materialController.dispose();
+    _techniqueController.dispose();
+    _storyController.dispose();
 
     _speech.stop();
 
@@ -627,6 +643,50 @@ class _AddProductScreenState extends State<AddProductScreen> {
                 keyboardType: const TextInputType.numberWithOptions(
                   decimal: true,
                 ),
+              ),
+
+              const SizedBox(height: 14),
+
+              const Text(
+                'Craft Traceability',
+                style: TextStyle(
+                  color: Colors.white,
+                  fontSize: 18,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+
+              const SizedBox(height: 10),
+
+              _buildTextField(
+                controller: _originController,
+                label: 'Origin / Region',
+                hint: 'Example: Sambalpur, Odisha',
+              ),
+
+              const SizedBox(height: 12),
+
+              _buildTextField(
+                controller: _materialController,
+                label: 'Material',
+                hint: 'Example: Cotton and natural dyes',
+              ),
+
+              const SizedBox(height: 12),
+
+              _buildTextField(
+                controller: _techniqueController,
+                label: 'Traditional Technique',
+                hint: 'Example: Ikat weaving',
+              ),
+
+              const SizedBox(height: 12),
+
+              _buildTextField(
+                controller: _storyController,
+                label: 'Heritage Story',
+                hint: 'Share the tradition behind this product',
+                maxLines: 3,
               ),
 
               const SizedBox(height: 20),

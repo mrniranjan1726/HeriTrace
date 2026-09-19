@@ -56,3 +56,4 @@ backend/.env
 
 .firebase/
 **/build/
+customer-current.png

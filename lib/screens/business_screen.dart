@@ -25,6 +25,7 @@ class _BusinessScreenState extends State<BusinessScreen> {
 
   List<Map<String, dynamic>> products = [];
   List<Map<String, dynamic>> recentOrders = [];
+  String? orderDataWarning;
 
   @override
   void initState() {
@@ -47,10 +48,6 @@ class _BusinessScreenState extends State<BusinessScreen> {
     }
 
     try {
-      // ----------------------------------------------------------
-      // PRODUCTS
-      // ----------------------------------------------------------
-
       final productSnapshot = await _db
           .collection('users')
           .doc(user.uid)
@@ -59,14 +56,41 @@ class _BusinessScreenState extends State<BusinessScreen> {
 
       final loadedProducts = productSnapshot.docs.map((doc) {
         final data = doc.data();
-
         return {'id': doc.id, ...data};
       }).toList();
 
-      // ----------------------------------------------------------
-      // ORDERS
-      // ----------------------------------------------------------
+      if (!mounted) return;
+      setState(() {
+        products = loadedProducts;
+        productCount = loadedProducts.length;
+        loading = false;
+        orderDataWarning = null;
+      });
+    } on FirebaseException catch (e) {
+      debugPrint('BUSINESS PRODUCTS ERROR: ${e.code}: ${e.message}');
+      if (!mounted) return;
+      setState(() {
+        loading = false;
+      });
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('Could not load products: ${e.message ?? e.code}'),
+        ),
+      );
+      return;
+    } catch (e) {
+      debugPrint('BUSINESS PRODUCTS ERROR: $e');
+      if (!mounted) return;
+      setState(() {
+        loading = false;
+      });
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text('Could not load products: $e')));
+      return;
+    }
 
+    try {
       final orderSnapshot = await _db.collectionGroup('orders').get();
 
       int totalOrders = 0;
@@ -139,38 +163,29 @@ class _BusinessScreenState extends State<BusinessScreen> {
       });
 
       if (!mounted) return;
-
       setState(() {
-        products = loadedProducts;
-
-        productCount = loadedProducts.length;
-
         orderCount = totalOrders;
-
         pendingOrders = pending;
-
         deliveredOrders = delivered;
-
         totalSales = sales;
-
         pendingSales = pendingAmount;
-
         recentOrders = artisanOrders.take(5).toList();
-
-        loading = false;
+        orderDataWarning = null;
+      });
+    } on FirebaseException catch (e) {
+      debugPrint('BUSINESS ORDERS ERROR: ${e.code}: ${e.message}');
+      if (!mounted) return;
+      setState(() {
+        orderDataWarning =
+            'Order data is temporarily unavailable. Products are still live.';
       });
     } catch (e) {
-      debugPrint('BUSINESS DATA ERROR: $e');
-
+      debugPrint('BUSINESS ORDERS ERROR: $e');
       if (!mounted) return;
-
       setState(() {
-        loading = false;
+        orderDataWarning =
+            'Order data is temporarily unavailable. Products are still live.';
       });
-
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Could not load business data: $e')),
-      );
     }
   }
 
@@ -267,6 +282,10 @@ class _BusinessScreenState extends State<BusinessScreen> {
 
                   const SizedBox(height: 22),
 
+                  if (orderDataWarning != null) _buildDataWarning(),
+
+                  if (orderDataWarning != null) const SizedBox(height: 18),
+
                   buildOverviewSection(),
 
                   const SizedBox(height: 25),
@@ -293,6 +312,30 @@ class _BusinessScreenState extends State<BusinessScreen> {
                 ],
               ),
             ),
+    );
+  }
+
+  Widget _buildDataWarning() {
+    return Container(
+      padding: const EdgeInsets.all(14),
+      decoration: BoxDecoration(
+        color: Colors.orange.withValues(alpha: 0.10),
+        borderRadius: BorderRadius.circular(14),
+        border: Border.all(color: Colors.orange.withValues(alpha: 0.35)),
+      ),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          const Icon(Icons.info_outline, color: Colors.orange),
+          const SizedBox(width: 10),
+          Expanded(
+            child: Text(
+              orderDataWarning!,
+              style: const TextStyle(fontSize: 13, height: 1.35),
+            ),
+          ),
+        ],
+      ),
     );
   }
 

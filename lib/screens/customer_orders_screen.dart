@@ -138,12 +138,12 @@ class _OrderCard extends StatelessWidget {
                     width: 44,
                     height: 44,
                     decoration: BoxDecoration(
-                      color: const Color(0xFFEAF4F0),
+                      color: const Color(0xFFF2E6DA),
                       borderRadius: BorderRadius.circular(13),
                     ),
                     child: const Icon(
                       Icons.shopping_bag_outlined,
-                      color: Color(0xFF176B5B),
+                      color: Color(0xFFA24B2A),
                     ),
                   ),
                   const SizedBox(width: 12),
@@ -194,7 +194,7 @@ class _OrderCard extends StatelessWidget {
                     style: const TextStyle(
                       fontSize: 17,
                       fontWeight: FontWeight.w800,
-                      color: Color(0xFF176B5B),
+                      color: Color(0xFFA24B2A),
                     ),
                   ),
                 ],
@@ -346,6 +346,10 @@ class _OrderCard extends StatelessWidget {
 
                   const SizedBox(height: 20),
 
+                  _OrderStatusTimeline(status: status),
+
+                  const SizedBox(height: 20),
+
                   const Text(
                     'Items',
                     style: TextStyle(fontSize: 17, fontWeight: FontWeight.w800),
@@ -395,7 +399,7 @@ class _OrderCard extends StatelessWidget {
                           style: const TextStyle(
                             fontSize: 20,
                             fontWeight: FontWeight.w900,
-                            color: Color(0xFF176B5B),
+                            color: Color(0xFFA24B2A),
                           ),
                         ),
                       ],
@@ -407,6 +411,87 @@ class _OrderCard extends StatelessWidget {
           ),
         );
       },
+    );
+  }
+}
+
+class _OrderStatusTimeline extends StatelessWidget {
+  final String status;
+
+  const _OrderStatusTimeline({required this.status});
+
+  @override
+  Widget build(BuildContext context) {
+    const stages = [
+      'pending',
+      'confirmed',
+      'processing',
+      'shipped',
+      'delivered',
+    ];
+    final activeIndex = status == 'cancelled' ? -1 : stages.indexOf(status);
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        const Text(
+          'Delivery progress',
+          style: TextStyle(fontSize: 16, fontWeight: FontWeight.w800),
+        ),
+        const SizedBox(height: 12),
+        Row(
+          children: List.generate(stages.length, (index) {
+            final active = activeIndex >= index;
+            return Expanded(
+              child: Row(
+                children: [
+                  Container(
+                    width: 22,
+                    height: 22,
+                    decoration: BoxDecoration(
+                      color: active
+                          ? const Color(0xFFA24B2A)
+                          : const Color(0xFFD9D0C4),
+                      shape: BoxShape.circle,
+                    ),
+                    child: active
+                        ? const Icon(Icons.check, size: 14, color: Colors.white)
+                        : null,
+                  ),
+                  if (index < stages.length - 1)
+                    Expanded(
+                      child: Container(
+                        height: 2,
+                        color: activeIndex > index
+                            ? const Color(0xFFA24B2A)
+                            : const Color(0xFFD9D0C4),
+                      ),
+                    ),
+                ],
+              ),
+            );
+          }),
+        ),
+        const SizedBox(height: 7),
+        Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: stages
+              .map(
+                (stage) => Text(
+                  stage[0].toUpperCase() + stage.substring(1),
+                  style: const TextStyle(fontSize: 9, color: Colors.grey),
+                ),
+              )
+              .toList(),
+        ),
+        if (status == 'cancelled')
+          const Padding(
+            padding: EdgeInsets.only(top: 8),
+            child: Text(
+              'This order was cancelled.',
+              style: TextStyle(color: Colors.red, fontWeight: FontWeight.w600),
+            ),
+          ),
+      ],
     );
   }
 }
@@ -504,12 +589,12 @@ class _ProductImage extends StatelessWidget {
         width: 68,
         height: 68,
         decoration: BoxDecoration(
-          color: const Color(0xFFEAF4F0),
+          color: const Color(0xFFF2E6DA),
           borderRadius: BorderRadius.circular(13),
         ),
         child: const Icon(
           Icons.image_outlined,
-          color: Color(0xFF176B5B),
+          color: Color(0xFFA24B2A),
           size: 30,
         ),
       );
@@ -526,10 +611,10 @@ class _ProductImage extends StatelessWidget {
           return Container(
             width: 68,
             height: 68,
-            color: const Color(0xFFEAF4F0),
+            color: const Color(0xFFF2E6DA),
             child: const Icon(
               Icons.image_not_supported_outlined,
-              color: Color(0xFF176B5B),
+              color: Color(0xFFA24B2A),
             ),
           );
         },
@@ -634,13 +719,13 @@ class _EmptyOrders extends StatelessWidget {
               width: 90,
               height: 90,
               decoration: BoxDecoration(
-                color: const Color(0xFFEAF4F0),
+                color: const Color(0xFFF2E6DA),
                 borderRadius: BorderRadius.circular(28),
               ),
               child: const Icon(
                 Icons.shopping_bag_outlined,
                 size: 45,
-                color: Color(0xFF176B5B),
+                color: Color(0xFFA24B2A),
               ),
             ),
 

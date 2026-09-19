@@ -18,7 +18,7 @@ class ArtisanOrdersScreen extends StatelessWidget {
     }
 
     return Scaffold(
-      backgroundColor: const Color(0xFFF7F8F4),
+      backgroundColor: const Color(0xFFF4EFE7),
       appBar: AppBar(
         title: const Text(
           'Customer Orders',
@@ -39,7 +39,7 @@ class ArtisanOrdersScreen extends StatelessWidget {
 
           if (snapshot.connectionState == ConnectionState.waiting) {
             return const Center(
-              child: CircularProgressIndicator(color: Color(0xFF176B5B)),
+              child: CircularProgressIndicator(color: Color(0xFFA24B2A)),
             );
           }
 
@@ -163,12 +163,12 @@ class _ArtisanOrderCard extends StatelessWidget {
                     width: 46,
                     height: 46,
                     decoration: BoxDecoration(
-                      color: const Color(0xFFEAF4F0),
+                      color: const Color(0xFFF2E6DA),
                       borderRadius: BorderRadius.circular(13),
                     ),
                     child: const Icon(
                       Icons.receipt_long_outlined,
-                      color: Color(0xFF176B5B),
+                      color: Color(0xFFA24B2A),
                     ),
                   ),
 
@@ -276,7 +276,7 @@ class _ArtisanOrderCard extends StatelessWidget {
                       style: const TextStyle(
                         fontSize: 17,
                         fontWeight: FontWeight.w900,
-                        color: Color(0xFF176B5B),
+                        color: Color(0xFFA24B2A),
                       ),
                     ),
                   ],
@@ -465,7 +465,7 @@ class _ArtisanOrderCard extends StatelessWidget {
                           children: [
                             const Icon(
                               Icons.person_outline,
-                              color: Color(0xFF176B5B),
+                              color: Color(0xFFA24B2A),
                             ),
                             const SizedBox(width: 10),
                             Expanded(
@@ -524,7 +524,7 @@ class _ArtisanOrderCard extends StatelessWidget {
                       Container(
                         padding: const EdgeInsets.all(15),
                         decoration: BoxDecoration(
-                          color: const Color(0xFFEAF4F0),
+                          color: const Color(0xFFF2E6DA),
                           borderRadius: BorderRadius.circular(15),
                         ),
                         child: Row(
@@ -543,7 +543,7 @@ class _ArtisanOrderCard extends StatelessWidget {
                               style: const TextStyle(
                                 fontSize: 20,
                                 fontWeight: FontWeight.w900,
-                                color: Color(0xFF176B5B),
+                                color: Color(0xFFA24B2A),
                               ),
                             ),
                           ],
@@ -567,7 +567,7 @@ class _ArtisanOrderCard extends StatelessWidget {
                         decoration: InputDecoration(
                           prefixIcon: const Icon(Icons.sync),
                           filled: true,
-                          fillColor: const Color(0xFFF7F8F4),
+                          fillColor: const Color(0xFFF4EFE7),
                           border: OutlineInputBorder(
                             borderRadius: BorderRadius.circular(14),
                             borderSide: BorderSide.none,
@@ -665,7 +665,7 @@ class _ArtisanOrderCard extends StatelessWidget {
           ..showSnackBar(
             SnackBar(
               content: Text('Order status updated to ${_statusLabel(status)}.'),
-              backgroundColor: const Color(0xFF176B5B),
+              backgroundColor: const Color(0xFFA24B2A),
               behavior: SnackBarBehavior.floating,
             ),
           );
@@ -739,10 +739,10 @@ class _OrderProduct extends StatelessWidget {
               height: 58,
               child: imageUrl.isEmpty
                   ? Container(
-                      color: const Color(0xFFEAF4F0),
+                      color: const Color(0xFFF2E6DA),
                       child: const Icon(
                         Icons.image_outlined,
-                        color: Color(0xFF176B5B),
+                        color: Color(0xFFA24B2A),
                       ),
                     )
                   : Image.network(
@@ -750,10 +750,10 @@ class _OrderProduct extends StatelessWidget {
                       fit: BoxFit.cover,
                       errorBuilder: (_, _, _) {
                         return Container(
-                          color: const Color(0xFFEAF4F0),
+                          color: const Color(0xFFF2E6DA),
                           child: const Icon(
                             Icons.image_not_supported_outlined,
-                            color: Color(0xFF176B5B),
+                            color: Color(0xFFA24B2A),
                           ),
                         );
                       },
@@ -927,13 +927,13 @@ class _EmptyOrders extends StatelessWidget {
               width: 90,
               height: 90,
               decoration: BoxDecoration(
-                color: const Color(0xFFEAF4F0),
+                color: const Color(0xFFF2E6DA),
                 borderRadius: BorderRadius.circular(28),
               ),
               child: const Icon(
                 Icons.receipt_long_outlined,
                 size: 45,
-                color: Color(0xFF176B5B),
+                color: Color(0xFFA24B2A),
               ),
             ),
 

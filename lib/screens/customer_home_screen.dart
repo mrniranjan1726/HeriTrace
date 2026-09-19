@@ -7,6 +7,7 @@ import 'package:flutter_animate/flutter_animate.dart';
 
 import 'customer_cart_screen.dart';
 import 'customer_orders_screen.dart';
+import '../widgets/support_chatbot.dart';
 
 class CustomerHomeScreen extends StatefulWidget {
   const CustomerHomeScreen({super.key});
@@ -17,12 +18,12 @@ class CustomerHomeScreen extends StatefulWidget {
 
 class _CustomerHomeScreenState extends State<CustomerHomeScreen>
     with SingleTickerProviderStateMixin {
-  static const _background = Color(0xFF0B1513);
-  static const _surface = Color(0xFF12231F);
-  static const _surfaceRaised = Color(0xFF1A302A);
-  static const _primaryText = Color(0xFFF2FAF6);
-  static const _secondaryText = Color(0xFFA7BBB4);
-  static const _accent = Color(0xFF4FD1B5);
+  static const _background = Color(0xFFF4EFE7);
+  static const _surface = Color(0xFFFFFCF7);
+  static const _surfaceRaised = Color(0xFFECE1D2);
+  static const _primaryText = Color(0xFF1D2A24);
+  static const _secondaryText = Color(0xFF68746D);
+  static const _accent = Color(0xFFA24B2A);
   final TextEditingController _searchController = TextEditingController();
   late final AnimationController _motionController;
 
@@ -40,7 +41,7 @@ class _CustomerHomeScreenState extends State<CustomerHomeScreen>
     'Home Decor',
   ];
 
-  final Color primary = const Color(0xFF176B5B);
+  final Color primary = const Color(0xFFA24B2A);
 
   User? get _user => FirebaseAuth.instance.currentUser;
 
@@ -94,7 +95,7 @@ class _CustomerHomeScreenState extends State<CustomerHomeScreen>
           suffixIconColor: _secondaryText,
           enabledBorder: OutlineInputBorder(
             borderRadius: BorderRadius.circular(16),
-            borderSide: const BorderSide(color: Color(0xFF29443B)),
+            borderSide: const BorderSide(color: Color(0xFFD9D0C4)),
           ),
           focusedBorder: OutlineInputBorder(
             borderRadius: BorderRadius.circular(16),
@@ -104,6 +105,7 @@ class _CustomerHomeScreenState extends State<CustomerHomeScreen>
       ),
       child: Scaffold(
         backgroundColor: _background,
+        floatingActionButton: const SupportChatbot(role: 'customer'),
         body: SafeArea(
           child: CustomScrollView(
             slivers: [
@@ -114,6 +116,7 @@ class _CustomerHomeScreenState extends State<CustomerHomeScreen>
                     AnimatedBuilder(
                           animation: _motionController,
                           builder: (context, child) => _buildWelcomeSection(
+                            context: context,
                             motion: _motionController.value,
                           ),
                         )
@@ -348,7 +351,7 @@ class _CustomerHomeScreenState extends State<CustomerHomeScreen>
                       child: Text(
                         '$count',
                         textAlign: TextAlign.center,
-                        style: const TextStyle(
+                        style: TextStyle(
                           color: _surface,
                           fontSize: 9,
                           fontWeight: FontWeight.w800,
@@ -455,7 +458,11 @@ class _CustomerHomeScreenState extends State<CustomerHomeScreen>
   // WELCOME
   // ============================================================
 
-  Widget _buildWelcomeSection({required double motion}) {
+  Widget _buildWelcomeSection({
+    required BuildContext context,
+    required double motion,
+  }) {
+    final isCompact = MediaQuery.sizeOf(context).width < 560;
     final email = _user?.email ?? 'Customer';
     final name = email.split('@').first;
 
@@ -468,7 +475,7 @@ class _CustomerHomeScreenState extends State<CustomerHomeScreen>
       child: AnimatedContainer(
         width: double.infinity,
         duration: const Duration(milliseconds: 250),
-        padding: const EdgeInsets.all(22),
+        padding: EdgeInsets.all(isCompact ? 17 : 22),
         decoration: BoxDecoration(
           borderRadius: BorderRadius.circular(22),
           gradient: LinearGradient(
@@ -530,20 +537,20 @@ class _CustomerHomeScreenState extends State<CustomerHomeScreen>
                 const SizedBox(height: 8),
                 Text(
                   'Hello, $displayName 👋',
-                  style: const TextStyle(
+                  style: TextStyle(
                     color: _surface,
-                    fontSize: 25,
+                    fontSize: isCompact ? 19 : 25,
                     fontWeight: FontWeight.w900,
                   ),
                 ),
-                const SizedBox(height: 8),
-                const SizedBox(
-                  width: 500,
-                  child: Text(
+                SizedBox(height: isCompact ? 6 : 8),
+                SizedBox(
+                  width: isCompact ? double.infinity : 500,
+                  child: const Text(
                     'Discover authentic handcrafted products directly from talented artisans.',
                     style: TextStyle(
                       color: Colors.white70,
-                      fontSize: 13,
+                      fontSize: 12,
                       height: 1.5,
                     ),
                   ),
@@ -965,7 +972,11 @@ class _CustomerHomeScreenState extends State<CustomerHomeScreen>
 
                   const SizedBox(height: 18),
 
-                  _LargeProductImage(imageUrl: imageUrl),
+                  _LargeProductImage(
+                    imageUrl: imageUrl,
+                    productName: name,
+                    category: category,
+                  ),
 
                   const SizedBox(height: 20),
 
@@ -1096,7 +1107,7 @@ class _CustomerHomeScreenState extends State<CustomerHomeScreen>
               width: 90,
               height: 90,
               decoration: BoxDecoration(
-                color: const Color(0xFFEAF4F0),
+                color: const Color(0xFFF2E6DA),
                 borderRadius: BorderRadius.circular(28),
               ),
               child: const Icon(
@@ -1251,7 +1262,7 @@ class _ProductCardState extends State<_ProductCard> {
   bool _isWishlisted = false;
   bool _isHovered = false;
   static const _cardSurface = Color(0xFF1A302A);
-  static const _cardAccent = Color(0xFF4FD1B5);
+  static const _cardAccent = Color(0xFFE0A95E);
   static const _cardSecondary = Color(0xFFA7BBB4);
   static const _cardText = Color(0xFFF2FAF6);
   static const _cardBackground = Color(0xFF0B1513);
@@ -1332,7 +1343,13 @@ class _ProductCardState extends State<_ProductCard> {
                   flex: 6,
                   child: Stack(
                     children: [
-                      Positioned.fill(child: _ProductImage(imageUrl: imageUrl)),
+                      Positioned.fill(
+                        child: _ProductImage(
+                          imageUrl: imageUrl,
+                          productName: name,
+                          category: category,
+                        ),
+                      ),
 
                       Positioned(
                         top: 10,
@@ -1381,7 +1398,7 @@ class _ProductCardState extends State<_ProductCard> {
                             vertical: 4,
                           ),
                           decoration: BoxDecoration(
-                            color: const Color(0xFFEAF4F0),
+                            color: const Color(0xFFF2E6DA),
                             borderRadius: BorderRadius.circular(10),
                           ),
                           child: Text(
@@ -1482,40 +1499,46 @@ class _ProductCardState extends State<_ProductCard> {
 
 class _ProductImage extends StatelessWidget {
   final String imageUrl;
+  final String productName;
+  final String category;
 
-  const _ProductImage({required this.imageUrl});
+  const _ProductImage({
+    required this.imageUrl,
+    required this.productName,
+    required this.category,
+  });
+
+  String get _fallbackUrl {
+    final name = productName.toLowerCase();
+    final type = category.toLowerCase();
+    if (name.contains('saree') ||
+        name.contains('ikat') ||
+        type.contains('textile')) {
+      return 'https://utkalikaodisha.com/wp-content/uploads/2023/01/TRI3D__Smb_3__silk_set172_srijla_front__2023-1-4-13-27-43__1200X1200_11zon.jpg';
+    }
+    if (name.contains('kurta') || name.contains('dress')) {
+      return 'https://5.imimg.com/data5/ECOM/Default/2023/8/331186386/FZ/KN/HT/67173095/1690936764682-sku-3379-0-1000x1000.jpg';
+    }
+    if (name.contains('basket') || type.contains('bamboo')) {
+      return 'https://images.unsplash.com/photo-1590874103328-eac38a683ce7?auto=format&fit=crop&w=900&q=82';
+    }
+    if (name.contains('pot') ||
+        name.contains('ceramic') ||
+        type.contains('pottery')) {
+      return 'https://images.unsplash.com/photo-1610701596007-11502861dcfa?auto=format&fit=crop&w=900&q=82';
+    }
+    return 'https://images.unsplash.com/photo-1616486338812-3dadae4b4ace?auto=format&fit=crop&w=900&q=82';
+  }
 
   @override
   Widget build(BuildContext context) {
-    if (imageUrl.isEmpty) {
-      return Container(
-        color: const Color(0xFFEAF4F0),
-        child: const Center(
-          child: Icon(
-            Icons.handyman_outlined,
-            size: 52,
-            color: Color(0xFF176B5B),
-          ),
-        ),
-      );
-    }
-
     return Image.network(
-      imageUrl,
+      imageUrl.isNotEmpty ? imageUrl : _fallbackUrl,
       fit: BoxFit.cover,
       width: double.infinity,
       height: double.infinity,
       errorBuilder: (_, _, _) {
-        return Container(
-          color: const Color(0xFFEAF4F0),
-          child: const Center(
-            child: Icon(
-              Icons.image_not_supported_outlined,
-              size: 42,
-              color: Color(0xFF176B5B),
-            ),
-          ),
-        );
+        return Image.network(_fallbackUrl, fit: BoxFit.cover);
       },
       loadingBuilder: (context, child, loadingProgress) {
         if (loadingProgress == null) {
@@ -1523,11 +1546,11 @@ class _ProductImage extends StatelessWidget {
         }
 
         return Container(
-          color: const Color(0xFFEAF4F0),
+          color: const Color(0xFFF2E6DA),
           child: const Center(
             child: CircularProgressIndicator(
               strokeWidth: 2,
-              color: Color(0xFF176B5B),
+              color: Color(0xFFA24B2A),
             ),
           ),
         );
@@ -1542,8 +1565,14 @@ class _ProductImage extends StatelessWidget {
 
 class _LargeProductImage extends StatelessWidget {
   final String imageUrl;
+  final String productName;
+  final String category;
 
-  const _LargeProductImage({required this.imageUrl});
+  const _LargeProductImage({
+    required this.imageUrl,
+    required this.productName,
+    required this.category,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -1552,33 +1581,11 @@ class _LargeProductImage extends StatelessWidget {
       child: SizedBox(
         width: double.infinity,
         height: 260,
-        child: imageUrl.isEmpty
-            ? Container(
-                color: const Color(0xFFEAF4F0),
-                child: const Center(
-                  child: Icon(
-                    Icons.handyman_outlined,
-                    size: 70,
-                    color: Color(0xFF176B5B),
-                  ),
-                ),
-              )
-            : Image.network(
-                imageUrl,
-                fit: BoxFit.cover,
-                errorBuilder: (_, _, _) {
-                  return Container(
-                    color: const Color(0xFFEAF4F0),
-                    child: const Center(
-                      child: Icon(
-                        Icons.image_not_supported_outlined,
-                        size: 60,
-                        color: Color(0xFF176B5B),
-                      ),
-                    ),
-                  );
-                },
-              ),
+        child: _ProductImage(
+          imageUrl: imageUrl,
+          productName: productName,
+          category: category,
+        ),
       ),
     );
   }

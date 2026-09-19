@@ -2,6 +2,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'heritage_features_screen.dart';
+import '../widgets/support_chatbot.dart';
 
 class AdminDashboardScreen extends StatefulWidget {
   const AdminDashboardScreen({super.key});
@@ -20,7 +21,7 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen>
 
   final Color background = const Color(0xFFF5F7F5);
   final Color dark = const Color(0xFF17221E);
-  final Color green = const Color(0xFF176B5B);
+  final Color green = const Color(0xFFA24B2A);
   final Color lightGreen = const Color(0xFFE2F2EC);
   final Color muted = const Color(0xFF6B756F);
 
@@ -71,6 +72,7 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen>
 
     return Scaffold(
       backgroundColor: background,
+      floatingActionButton: const SupportChatbot(role: 'admin'),
       body: Row(
         children: [
           if (!isMobile) _buildSidebar(),
@@ -124,7 +126,7 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen>
                     height: 44,
                     decoration: BoxDecoration(
                       gradient: const LinearGradient(
-                        colors: [Color(0xFF49A78D), Color(0xFF176B5B)],
+                        colors: [Color(0xFF49A78D), Color(0xFFA24B2A)],
                       ),
                       borderRadius: BorderRadius.circular(14),
                     ),
@@ -409,6 +411,21 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen>
           const SizedBox(width: 10),
 
           InkWell(
+            onTap: () => Navigator.pushNamed(context, '/admin-profile'),
+            borderRadius: BorderRadius.circular(13),
+            child: const CircleAvatar(
+              radius: 21,
+              backgroundColor: Color(0xFFE2F2EC),
+              child: Icon(
+                Icons.admin_panel_settings_rounded,
+                color: Color(0xFFA24B2A),
+              ),
+            ),
+          ),
+
+          const SizedBox(width: 10),
+
+          InkWell(
             onTap: _refresh,
             borderRadius: BorderRadius.circular(13),
             child: Container(
@@ -566,7 +583,7 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen>
         gradient: const LinearGradient(
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
-          colors: [Color(0xFF173E35), Color(0xFF176B5B), Color(0xFF2D8A74)],
+          colors: [Color(0xFF173E35), Color(0xFFA24B2A), Color(0xFF2D8A74)],
         ),
         borderRadius: BorderRadius.circular(26),
         boxShadow: [
@@ -703,7 +720,7 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen>
         'Registered Users',
         '$users',
         Icons.people_alt_rounded,
-        const Color(0xFF176B5B),
+        const Color(0xFFA24B2A),
       ),
       _statCard(
         'Artisans',
@@ -1262,6 +1279,10 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen>
 
               const SizedBox(height: 22),
 
+              _buildAdminProductSummary(products),
+
+              const SizedBox(height: 20),
+
               _searchBox('Search products or categories...'),
 
               const SizedBox(height: 20),
@@ -1284,6 +1305,39 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen>
     );
   }
 
+  Widget _buildAdminProductSummary(
+    List<QueryDocumentSnapshot<Map<String, dynamic>>> products,
+  ) {
+    final pending = products
+        .where(
+          (product) => (product.data()['status'] ?? 'approved') == 'pending',
+        )
+        .length;
+    final approved = products
+        .where(
+          (product) => (product.data()['status'] ?? 'approved') == 'approved',
+        )
+        .length;
+
+    return Wrap(
+      spacing: 14,
+      runSpacing: 14,
+      children: [
+        _smallSummary(
+          'Total products',
+          products.length,
+          Icons.inventory_2_outlined,
+        ),
+        _smallSummary(
+          'Pending review',
+          pending,
+          Icons.pending_actions_outlined,
+        ),
+        _smallSummary('Approved', approved, Icons.verified_outlined),
+      ],
+    );
+  }
+
   Widget _productManagementRow(
     QueryDocumentSnapshot<Map<String, dynamic>> product,
   ) {
@@ -1302,6 +1356,7 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen>
             .toString();
 
     final status = (data['status'] ?? 'approved').toString();
+    final imageUrl = (data['imageUrl'] ?? '').toString();
 
     final isPending = status == 'pending';
 
@@ -1312,14 +1367,31 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen>
       ),
       child: Row(
         children: [
-          Container(
-            width: 55,
-            height: 55,
-            decoration: BoxDecoration(
-              color: lightGreen,
-              borderRadius: BorderRadius.circular(15),
+          ClipRRect(
+            borderRadius: BorderRadius.circular(15),
+            child: SizedBox(
+              width: 55,
+              height: 55,
+              child: imageUrl.isEmpty
+                  ? Container(
+                      color: lightGreen,
+                      child: const Icon(
+                        Icons.handyman_outlined,
+                        color: Color(0xFF4B766A),
+                      ),
+                    )
+                  : Image.network(
+                      imageUrl,
+                      fit: BoxFit.cover,
+                      errorBuilder: (_, _, _) => Container(
+                        color: lightGreen,
+                        child: const Icon(
+                          Icons.broken_image_outlined,
+                          color: Color(0xFF4B766A),
+                        ),
+                      ),
+                    ),
             ),
-            child: const Icon(Icons.image_outlined, color: Color(0xFF4B766A)),
           ),
 
           const SizedBox(width: 14),
@@ -2012,7 +2084,7 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen>
           height: 52,
           decoration: BoxDecoration(
             gradient: const LinearGradient(
-              colors: [Color(0xFF176B5B), Color(0xFF32977F)],
+              colors: [Color(0xFFA24B2A), Color(0xFF32977F)],
             ),
             borderRadius: BorderRadius.circular(16),
           ),

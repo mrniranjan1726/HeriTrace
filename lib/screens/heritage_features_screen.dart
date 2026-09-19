@@ -14,7 +14,7 @@ class _HeritageFeaturesScreenState extends State<HeritageFeaturesScreen> {
   static const _surface = Color(0xFF11231E);
   static const _text = Color(0xFFF2FAF6);
   static const _muted = Color(0xFFA7BBB4);
-  static const _accent = Color(0xFF4FD1B5);
+  static const _accent = Color(0xFFE0A95E);
 
   int _selectedTab = 0;
   bool _loading = true;

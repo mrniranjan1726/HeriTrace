@@ -66,7 +66,7 @@ class _CustomerAuctionCard extends StatelessWidget {
           children: [
             Row(
               children: [
-                const Icon(Icons.gavel, color: Color(0xFF176B5B)),
+                const Icon(Icons.gavel, color: Color(0xFFA24B2A)),
                 const SizedBox(width: 8),
                 Expanded(
                   child: Text(

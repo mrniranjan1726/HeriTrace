@@ -6,7 +6,7 @@ import '../services/firebase_service.dart';
 import 'admin_dashboard_screen.dart';
 import 'customer_home_screen.dart';
 import 'home_screen.dart';
-import 'login_screen.dart';
+import 'landing_screen.dart';
 
 class AuthGate extends StatefulWidget {
   const AuthGate({super.key});
@@ -36,7 +36,7 @@ class _AuthGateState extends State<AuthGate> {
 
         final user = snapshot.data;
         if (user == null) {
-          return const LoginScreen();
+          return const LandingScreen();
         }
 
         return FutureBuilder<String>(

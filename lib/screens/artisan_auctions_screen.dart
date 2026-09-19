@@ -216,7 +216,7 @@ class _EmptyState extends StatelessWidget {
             const Icon(
               Icons.gavel_outlined,
               size: 56,
-              color: Color(0xFF176B5B),
+              color: Color(0xFFA24B2A),
             ),
             const SizedBox(height: 14),
             const Text(

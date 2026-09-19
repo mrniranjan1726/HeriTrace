@@ -18,7 +18,7 @@ class _CustomerProfileScreenState extends State<CustomerProfileScreen> {
   static const _raised = Color(0xFF1A302A);
   static const _text = Color(0xFFF2FAF6);
   static const _muted = Color(0xFFA7BBB4);
-  static const _accent = Color(0xFF4FD1B5);
+  static const _accent = Color(0xFFE0A95E);
 
   final _nameController = TextEditingController();
   final _phoneController = TextEditingController();
@@ -390,7 +390,7 @@ class _CustomerProfileScreenState extends State<CustomerProfileScreen> {
       padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
         gradient: const LinearGradient(
-          colors: [Color(0xFF176B5B), Color(0xFF0F5145)],
+          colors: [Color(0xFFA24B2A), Color(0xFF0F5145)],
         ),
         borderRadius: BorderRadius.circular(22),
       ),

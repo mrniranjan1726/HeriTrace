@@ -14,12 +14,129 @@ class _MarketplaceScreenState extends State<MarketplaceScreen> {
   static const _surfaceRaised = Color(0xFF1A302A);
   static const _text = Color(0xFFF2FAF6);
   static const _muted = Color(0xFFA7BBB4);
-  static const _accent = Color(0xFF4FD1B5);
+  static const _accent = Color(0xFFE0A95E);
 
   final TextEditingController _searchController = TextEditingController();
 
   String _selectedCategory = 'All';
   String _searchText = '';
+
+  static String _imageForProduct(
+    Map<String, dynamic> data, {
+    bool ignoreStoredUrl = false,
+  }) {
+    final name = (data['name'] ?? '').toString().toLowerCase();
+    final category = (data['category'] ?? '').toString().toLowerCase();
+    final storedUrl = (data['imageUrl'] ?? '').toString().trim();
+
+    if (!ignoreStoredUrl && storedUrl.isNotEmpty) {
+      return storedUrl;
+    }
+
+    if (name.contains('saree') ||
+        name.contains('ikat') ||
+        category.contains('textile')) {
+      return 'https://utkalikaodisha.com/wp-content/uploads/2023/01/TRI3D__Smb_3__silk_set172_srijla_front__2023-1-4-13-27-43__1200X1200_11zon.jpg';
+    }
+    if (name.contains('kurta') || name.contains('dress')) {
+      return 'https://5.imimg.com/data5/ECOM/Default/2023/8/331186386/FZ/KN/HT/67173095/1690936764682-sku-3379-0-1000x1000.jpg';
+    }
+    if (name.contains('basket') || category.contains('bamboo')) {
+      return 'https://images.unsplash.com/photo-1590874103328-eac38a683ce7?auto=format&fit=crop&w=900&q=82';
+    }
+    if (category.contains('pottery') || name.contains('ceramic')) {
+      return 'https://images.unsplash.com/photo-1610701596007-11502861dcfa?auto=format&fit=crop&w=900&q=82';
+    }
+    if (category.contains('jewellery') || category.contains('jewelry')) {
+      return 'https://images.unsplash.com/photo-1535632066927-ab7c9ab60908?auto=format&fit=crop&w=900&q=82';
+    }
+    if (category.contains('painting') || name.contains('pattachitra')) {
+      return 'https://images.unsplash.com/photo-1579783902614-a3fb3927b6a5?auto=format&fit=crop&w=900&q=82';
+    }
+    if (category.contains('wood')) {
+      return 'https://images.unsplash.com/photo-1549490349-8643362247b5?auto=format&fit=crop&w=900&q=82';
+    }
+    if (category.contains('decor') || category.contains('handicraft')) {
+      return 'https://images.unsplash.com/photo-1616486338812-3dadae4b4ace?auto=format&fit=crop&w=900&q=82';
+    }
+
+    return 'https://images.unsplash.com/photo-1452860606245-08bea0c7d33c?auto=format&fit=crop&w=900&q=82';
+  }
+
+  static const _demoProducts = [
+    {
+      'name': 'Sambalpuri Ikat Saree',
+      'category': 'Textiles',
+      'description':
+          'Handwoven Sambalpuri Ikat created with a traditional tie-and-dye weaving technique.',
+      'price': 2499,
+      'origin': 'Sambalpur, Odisha',
+      'material': 'Cotton and natural dyes',
+      'technique': 'Ikat weaving',
+      'tradition': 'Sambalpuri handloom',
+      'verified': true,
+    },
+    {
+      'name': 'Sambalpuri Everyday Kurta',
+      'category': 'Textiles',
+      'description':
+          'A comfortable handloom kurta carrying the rhythm of Odisha motifs.',
+      'price': 1299,
+      'origin': 'Bargarh, Odisha',
+      'material': 'Handloom cotton',
+      'technique': 'Traditional loom weaving',
+      'tradition': 'Sambalpuri textile craft',
+      'verified': true,
+    },
+    {
+      'name': 'Handwoven Bamboo Basket',
+      'category': 'Bamboo Craft',
+      'description':
+          'Lightweight utility basket woven by hand from locally sourced bamboo.',
+      'price': 699,
+      'origin': 'Koraput, Odisha',
+      'material': 'Natural bamboo',
+      'technique': 'Bamboo coiling and weaving',
+      'tradition': 'Tribal bamboo craft',
+      'verified': true,
+    },
+    {
+      'name': 'Terracotta Heritage Pot',
+      'category': 'Pottery',
+      'description':
+          'A warm terracotta vessel shaped and fired using a time-tested pottery tradition.',
+      'price': 899,
+      'origin': 'Khurda, Odisha',
+      'material': 'Local terracotta clay',
+      'technique': 'Wheel-thrown pottery',
+      'tradition': 'Odisha clay craft',
+      'verified': true,
+    },
+    {
+      'name': 'Silver Filigree Pendant',
+      'category': 'Jewellery',
+      'description':
+          'Fine silver filigree jewellery inspired by the detailed craft of Cuttack.',
+      'price': 1899,
+      'origin': 'Cuttack, Odisha',
+      'material': 'Sterling silver',
+      'technique': 'Tarakasi filigree',
+      'tradition': 'Cuttack silver craft',
+      'verified': true,
+    },
+    {
+      'name': 'Pattachitra Story Panel',
+      'category': 'Paintings',
+      'description':
+          'A hand-painted narrative panel inspired by Odisha temple traditions.',
+      'price': 1599,
+      'origin': 'Raghurajpur, Odisha',
+      'material': 'Natural pigments on prepared cloth',
+      'technique': 'Pattachitra painting',
+      'tradition': 'Jagannath storytelling',
+      'verified': true,
+    },
+  ];
 
   final List<String> _categories = [
     'All',
@@ -88,15 +205,16 @@ class _MarketplaceScreenState extends State<MarketplaceScreen> {
             }
 
             final documents = snapshot.data?.docs ?? [];
+            final List<Map<String, dynamic>> catalog = documents.isEmpty
+                ? _demoProducts.toList()
+                : documents.map((doc) => doc.data()).toList();
 
-            final products = documents
-                .where((doc) => _matchesProduct(doc.data()))
-                .toList();
+            final products = catalog.where(_matchesProduct).toList();
 
             return CustomScrollView(
               slivers: [
                 SliverToBoxAdapter(
-                  child: _buildHeader(context, documents.length),
+                  child: _buildHeader(context, catalog.length),
                 ),
 
                 SliverToBoxAdapter(child: _buildSearchSection()),
@@ -156,9 +274,9 @@ class _MarketplaceScreenState extends State<MarketplaceScreen> {
                             final product = products[index];
 
                             return _ProductCard(
-                              data: product.data(),
+                              data: product,
                               onTap: () {
-                                _showProductDetails(context, product.data());
+                                _showProductDetails(context, product);
                               },
                             );
                           }, childCount: products.length),
@@ -429,7 +547,13 @@ class _MarketplaceScreenState extends State<MarketplaceScreen> {
         .toString();
     final notes = (data['notes'] ?? '').toString();
     final price = data['price'];
-    final imageUrl = (data['imageUrl'] ?? '').toString();
+    final imageUrl = _imageForProduct(data);
+    final artisanName = (data['artisanName'] ?? 'HeriTrace artisan').toString();
+    final origin = (data['origin'] ?? 'India').toString();
+    final material = (data['material'] ?? 'Traditional materials').toString();
+    final technique = (data['technique'] ?? category).toString();
+    final tradition = (data['tradition'] ?? 'Living heritage craft').toString();
+    final verified = data['verified'] == true;
 
     showModalBottomSheet(
       context: context,
@@ -458,7 +582,7 @@ class _MarketplaceScreenState extends State<MarketplaceScreen> {
                   ),
                 ),
                 const SizedBox(height: 18),
-                _detailImage(imageUrl),
+                _detailImage(imageUrl, data),
                 const SizedBox(height: 20),
                 Text(
                   name,
@@ -506,6 +630,15 @@ class _MarketplaceScreenState extends State<MarketplaceScreen> {
                   description,
                   style: const TextStyle(height: 1.55, color: _muted),
                 ),
+                const SizedBox(height: 24),
+                _CraftTrace(
+                  artisanName: artisanName,
+                  origin: origin,
+                  material: material,
+                  technique: technique,
+                  tradition: tradition,
+                  verified: verified,
+                ),
                 if (notes.isNotEmpty) ...[
                   const SizedBox(height: 18),
                   const Text(
@@ -548,7 +681,7 @@ class _MarketplaceScreenState extends State<MarketplaceScreen> {
     );
   }
 
-  Widget _detailImage(String imageUrl) {
+  Widget _detailImage(String imageUrl, Map<String, dynamic> data) {
     if (imageUrl.isEmpty) {
       return Container(
         height: 230,
@@ -569,17 +702,27 @@ class _MarketplaceScreenState extends State<MarketplaceScreen> {
         height: 230,
         fit: BoxFit.cover,
         errorBuilder: (_, _, _) {
-          return Container(
-            height: 230,
-            color: const Color(0xFF21463B),
-            child: const Icon(
-              Icons.broken_image_outlined,
-              size: 60,
-              color: _accent,
-            ),
-          );
+          final fallbackUrl = _imageForProduct(data, ignoreStoredUrl: true);
+          if (fallbackUrl != imageUrl) {
+            return Image.network(
+              fallbackUrl,
+              width: double.infinity,
+              height: 230,
+              fit: BoxFit.cover,
+              errorBuilder: (_, _, _) => _brokenDetailImage(),
+            );
+          }
+          return _brokenDetailImage();
         },
       ),
+    );
+  }
+
+  Widget _brokenDetailImage() {
+    return Container(
+      height: 230,
+      color: const Color(0xFF21463B),
+      child: const Icon(Icons.broken_image_outlined, size: 60, color: _accent),
     );
   }
 
@@ -602,6 +745,7 @@ class _MarketplaceScreenState extends State<MarketplaceScreen> {
   }
 }
 
+/*
 class _ProductCard extends StatelessWidget {
   final Map<String, dynamic> data;
   final VoidCallback onTap;
@@ -613,7 +757,9 @@ class _ProductCard extends StatelessWidget {
     final name = (data['name'] ?? 'Untitled Product').toString();
     final category = (data['category'] ?? 'Handicraft').toString();
     final description = (data['description'] ?? '').toString();
-    final imageUrl = (data['imageUrl'] ?? '').toString();
+    final imageUrl = _MarketplaceScreenState._imageForProduct(data);
+    final origin = (data['origin'] ?? '').toString();
+    final verified = data['verified'] == true;
 
     return InkWell(
       onTap: onTap,
@@ -639,7 +785,7 @@ class _ProductCard extends StatelessWidget {
               flex: 6,
               child: Stack(
                 children: [
-                  Positioned.fill(child: _productImage(imageUrl)),
+                  Positioned.fill(child: _productImage(imageUrl, data)),
                   Positioned(
                     top: 12,
                     left: 12,
@@ -713,6 +859,31 @@ class _ProductCard extends StatelessWidget {
                           color: _MarketplaceScreenState._muted,
                         ),
                       ),
+                    if (origin.isNotEmpty || verified) ...[
+                      const SizedBox(height: 8),
+                      Row(
+                        children: [
+                          if (origin.isNotEmpty)
+                            Expanded(
+                              child: Text(
+                                '📍 $origin',
+                                maxLines: 1,
+                                overflow: TextOverflow.ellipsis,
+                                style: const TextStyle(
+                                  fontSize: 11,
+                                  color: _MarketplaceScreenState._muted,
+                                ),
+                              ),
+                            ),
+                          if (verified)
+                            const Icon(
+                              Icons.verified_rounded,
+                              size: 16,
+                              color: _MarketplaceScreenState._accent,
+                            ),
+                        ],
+                      ),
+                    ],
                     const Spacer(),
                     Row(
                       children: [
@@ -742,35 +913,37 @@ class _ProductCard extends StatelessWidget {
     );
   }
 
-  Widget _productImage(String imageUrl) {
-    if (imageUrl.isEmpty) {
-      return Container(
-        color: _MarketplaceScreenState._surfaceRaised,
-        child: const Center(
-          child: Icon(
-            Icons.handyman_outlined,
-            size: 58,
-            color: _MarketplaceScreenState._accent,
-          ),
-        ),
-      );
-    }
-
+  Widget _productImage(String imageUrl, Map<String, dynamic> data) {
     return Image.network(
       imageUrl,
       fit: BoxFit.cover,
       errorBuilder: (_, _, _) {
-        return Container(
-          color: _MarketplaceScreenState._surfaceRaised,
-          child: const Center(
-            child: Icon(
-              Icons.image_not_supported_outlined,
-              size: 48,
-              color: _MarketplaceScreenState._accent,
-            ),
-          ),
+        final fallbackUrl = _MarketplaceScreenState._imageForProduct(
+          data,
+          ignoreStoredUrl: true,
         );
+        if (fallbackUrl != imageUrl) {
+          return Image.network(
+            fallbackUrl,
+            fit: BoxFit.cover,
+            errorBuilder: (_, _, _) => _brokenImage(),
+          );
+        }
+        return _brokenImage();
       },
+    );
+  }
+
+  Widget _brokenImage() {
+    return Container(
+      color: _MarketplaceScreenState._surfaceRaised,
+      child: const Center(
+        child: Icon(
+          Icons.image_not_supported_outlined,
+          size: 48,
+          color: _MarketplaceScreenState._accent,
+        ),
+      ),
     );
   }
 
@@ -790,5 +963,392 @@ class _ProductCard extends StatelessWidget {
     }
 
     return '₹$value';
+  }
+}
+          return Container(
+            height: 230,
+            color: const Color(0xFF21463B),
+            child: const Icon(
+              Icons.broken_image_outlined,
+              size: 60,
+              color: _accent,
+            ),
+          );
+        },
+      ),
+    );
+  }
+
+  String _formatPrice(dynamic value) {
+    if (value == null) {
+      return 'Price not available';
+    }
+
+    if (value is num) {
+      return '₹${value.toStringAsFixed(0)}';
+    }
+
+    final parsed = double.tryParse(value.toString());
+
+    if (parsed != null) {
+      return '₹${parsed.toStringAsFixed(0)}';
+    }
+
+    return '₹$value';
+  }
+}
+*/
+
+class _ProductCard extends StatelessWidget {
+  final Map<String, dynamic> data;
+  final VoidCallback onTap;
+
+  const _ProductCard({required this.data, required this.onTap});
+
+  @override
+  Widget build(BuildContext context) {
+    final name = (data['name'] ?? 'Untitled Product').toString();
+    final category = (data['category'] ?? 'Handicraft').toString();
+    final description = (data['description'] ?? '').toString();
+    final imageUrl = _MarketplaceScreenState._imageForProduct(data);
+    final origin = (data['origin'] ?? '').toString();
+    final verified = data['verified'] == true;
+
+    return InkWell(
+      onTap: onTap,
+      borderRadius: BorderRadius.circular(22),
+      child: Container(
+        decoration: BoxDecoration(
+          color: _MarketplaceScreenState._surface,
+          borderRadius: BorderRadius.circular(22),
+          border: Border.all(color: const Color(0xFF29443B)),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withValues(alpha: 0.035),
+              blurRadius: 18,
+              offset: const Offset(0, 7),
+            ),
+          ],
+        ),
+        clipBehavior: Clip.antiAlias,
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Expanded(
+              flex: 6,
+              child: Stack(
+                children: [
+                  Positioned.fill(child: _productImage(imageUrl, data)),
+                  Positioned(
+                    top: 12,
+                    left: 12,
+                    child: Container(
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 10,
+                        vertical: 6,
+                      ),
+                      decoration: BoxDecoration(
+                        color: _MarketplaceScreenState._surfaceRaised
+                            .withValues(alpha: 0.96),
+                        borderRadius: BorderRadius.circular(16),
+                      ),
+                      child: Text(
+                        category,
+                        style: const TextStyle(
+                          fontSize: 10,
+                          fontWeight: FontWeight.w800,
+                          color: _MarketplaceScreenState._accent,
+                        ),
+                      ),
+                    ),
+                  ),
+                  Positioned(
+                    top: 10,
+                    right: 10,
+                    child: Container(
+                      width: 36,
+                      height: 36,
+                      decoration: BoxDecoration(
+                        color: _MarketplaceScreenState._surfaceRaised
+                            .withValues(alpha: 0.96),
+                        shape: BoxShape.circle,
+                      ),
+                      child: const Icon(
+                        Icons.favorite_border_rounded,
+                        size: 19,
+                        color: Color(0xFF46514C),
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            Expanded(
+              flex: 4,
+              child: Padding(
+                padding: const EdgeInsets.fromLTRB(15, 13, 15, 14),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      name,
+                      maxLines: 2,
+                      overflow: TextOverflow.ellipsis,
+                      style: const TextStyle(
+                        fontSize: 16,
+                        fontWeight: FontWeight.w800,
+                        color: _MarketplaceScreenState._text,
+                      ),
+                    ),
+                    const SizedBox(height: 6),
+                    if (description.isNotEmpty)
+                      Text(
+                        description,
+                        maxLines: 2,
+                        overflow: TextOverflow.ellipsis,
+                        style: const TextStyle(
+                          fontSize: 11.5,
+                          height: 1.35,
+                          color: _MarketplaceScreenState._muted,
+                        ),
+                      ),
+                    if (origin.isNotEmpty || verified) ...[
+                      const SizedBox(height: 8),
+                      Row(
+                        children: [
+                          if (origin.isNotEmpty)
+                            Expanded(
+                              child: Text(
+                                '📍 $origin',
+                                maxLines: 1,
+                                overflow: TextOverflow.ellipsis,
+                                style: const TextStyle(
+                                  fontSize: 11,
+                                  color: _MarketplaceScreenState._muted,
+                                ),
+                              ),
+                            ),
+                          if (verified)
+                            const Icon(
+                              Icons.verified_rounded,
+                              size: 16,
+                              color: _MarketplaceScreenState._accent,
+                            ),
+                        ],
+                      ),
+                    ],
+                    const Spacer(),
+                    Row(
+                      children: [
+                        Text(
+                          _price(data['price']),
+                          style: const TextStyle(
+                            fontSize: 18,
+                            fontWeight: FontWeight.w800,
+                            color: _MarketplaceScreenState._accent,
+                          ),
+                        ),
+                        const Spacer(),
+                        const Icon(
+                          Icons.arrow_forward_rounded,
+                          size: 20,
+                          color: _MarketplaceScreenState._accent,
+                        ),
+                      ],
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _productImage(String imageUrl, Map<String, dynamic> data) {
+    return Image.network(
+      imageUrl,
+      fit: BoxFit.cover,
+      errorBuilder: (_, _, _) {
+        final fallbackUrl = _MarketplaceScreenState._imageForProduct(
+          data,
+          ignoreStoredUrl: true,
+        );
+        if (fallbackUrl != imageUrl) {
+          return Image.network(
+            fallbackUrl,
+            fit: BoxFit.cover,
+            errorBuilder: (_, _, _) => _brokenImage(),
+          );
+        }
+        return _brokenImage();
+      },
+    );
+  }
+
+  Widget _brokenImage() {
+    return Container(
+      color: _MarketplaceScreenState._surfaceRaised,
+      child: const Center(
+        child: Icon(
+          Icons.image_not_supported_outlined,
+          size: 48,
+          color: _MarketplaceScreenState._accent,
+        ),
+      ),
+    );
+  }
+
+  String _price(dynamic value) {
+    if (value == null) {
+      return '₹—';
+    }
+
+    if (value is num) {
+      return '₹${value.toStringAsFixed(0)}';
+    }
+
+    final parsed = double.tryParse(value.toString());
+
+    if (parsed != null) {
+      return '₹${parsed.toStringAsFixed(0)}';
+    }
+
+    return '₹$value';
+  }
+}
+
+class _CraftTrace extends StatelessWidget {
+  const _CraftTrace({
+    required this.artisanName,
+    required this.origin,
+    required this.material,
+    required this.technique,
+    required this.tradition,
+    required this.verified,
+  });
+
+  final String artisanName;
+  final String origin;
+  final String material;
+  final String technique;
+  final String tradition;
+  final bool verified;
+
+  @override
+  Widget build(BuildContext context) {
+    final steps = [
+      ('Product', 'This piece'),
+      ('Artisan', artisanName),
+      ('Region', origin),
+      ('Material', material),
+      ('Technique', technique),
+      ('Heritage story', tradition),
+    ];
+
+    return Container(
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: const Color(0xFF0B1513),
+        borderRadius: BorderRadius.circular(18),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              const Icon(
+                Icons.route_rounded,
+                color: _MarketplaceScreenState._accent,
+              ),
+              const SizedBox(width: 8),
+              const Expanded(
+                child: Text(
+                  'CRAFT TRACE',
+                  style: TextStyle(
+                    color: Colors.white,
+                    fontWeight: FontWeight.w800,
+                    letterSpacing: 1.2,
+                  ),
+                ),
+              ),
+              if (verified)
+                const Icon(
+                  Icons.verified_rounded,
+                  color: _MarketplaceScreenState._accent,
+                  size: 19,
+                ),
+            ],
+          ),
+          const SizedBox(height: 14),
+          ...steps.asMap().entries.map(
+            (entry) => _TraceStep(
+              label: entry.value.$1,
+              value: entry.value.$2,
+              isLast: entry.key == steps.length - 1,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _TraceStep extends StatelessWidget {
+  const _TraceStep({
+    required this.label,
+    required this.value,
+    required this.isLast,
+  });
+
+  final String label;
+  final String value;
+  final bool isLast;
+
+  @override
+  Widget build(BuildContext context) {
+    return Row(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        SizedBox(
+          width: 18,
+          child: Column(
+            children: [
+              const Icon(Icons.circle, size: 8, color: Color(0xFFE0A95E)),
+              if (!isLast)
+                Container(width: 1, height: 24, color: const Color(0xFF42675A)),
+            ],
+          ),
+        ),
+        const SizedBox(width: 8),
+        Expanded(
+          child: Padding(
+            padding: const EdgeInsets.only(bottom: 10),
+            child: RichText(
+              text: TextSpan(
+                children: [
+                  TextSpan(
+                    text: '$label\n',
+                    style: const TextStyle(
+                      color: Color(0xFFA7BBB4),
+                      fontSize: 11,
+                    ),
+                  ),
+                  TextSpan(
+                    text: value,
+                    style: const TextStyle(
+                      color: Colors.white,
+                      fontSize: 13,
+                      fontWeight: FontWeight.w700,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ),
+        ),
+      ],
+    );
   }
 }

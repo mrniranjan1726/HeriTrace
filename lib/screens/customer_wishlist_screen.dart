@@ -19,9 +19,7 @@ class CustomerWishlistScreen extends StatelessWidget {
 
     if (user == null) {
       return const Scaffold(
-        body: Center(
-          child: Text('Please login to view your wishlist.'),
-        ),
+        body: Center(child: Text('Please login to view your wishlist.')),
       );
     }
 
@@ -34,16 +32,12 @@ class CustomerWishlistScreen extends StatelessWidget {
       appBar: AppBar(
         title: const Text(
           'My Wishlist',
-          style: TextStyle(
-            fontWeight: FontWeight.bold,
-          ),
+          style: TextStyle(fontWeight: FontWeight.bold),
         ),
         centerTitle: true,
       ),
       body: StreamBuilder<QuerySnapshot<Map<String, dynamic>>>(
-        stream: wishlistRef
-            .orderBy('addedAt', descending: true)
-            .snapshots(),
+        stream: wishlistRef.snapshots(),
         builder: (context, snapshot) {
           if (snapshot.hasError) {
             return Center(
@@ -57,11 +51,8 @@ class CustomerWishlistScreen extends StatelessWidget {
             );
           }
 
-          if (snapshot.connectionState ==
-              ConnectionState.waiting) {
-            return const Center(
-              child: CircularProgressIndicator(),
-            );
+          if (snapshot.connectionState == ConnectionState.waiting) {
+            return const Center(child: CircularProgressIndicator());
           }
 
           final products = snapshot.data?.docs ?? [];
@@ -72,8 +63,7 @@ class CustomerWishlistScreen extends StatelessWidget {
 
           return GridView.builder(
             padding: const EdgeInsets.all(20),
-            gridDelegate:
-                const SliverGridDelegateWithMaxCrossAxisExtent(
+            gridDelegate: const SliverGridDelegateWithMaxCrossAxisExtent(
               maxCrossAxisExtent: 330,
               mainAxisExtent: 355,
               crossAxisSpacing: 16,
@@ -85,16 +75,10 @@ class CustomerWishlistScreen extends StatelessWidget {
                 document: products[index],
                 money: _money,
                 onRemove: () {
-                  _removeFromWishlist(
-                    products[index].id,
-                    wishlistRef,
-                  );
+                  _removeFromWishlist(products[index].id, wishlistRef);
                 },
                 onAddToCart: () {
-                  _addToCart(
-                    products[index],
-                    context,
-                  );
+                  _addToCart(products[index], context);
                 },
               );
             },
@@ -127,19 +111,13 @@ class CustomerWishlistScreen extends StatelessWidget {
             const SizedBox(height: 24),
             const Text(
               'Your wishlist is empty',
-              style: TextStyle(
-                fontSize: 24,
-                fontWeight: FontWeight.bold,
-              ),
+              style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
             ),
             const SizedBox(height: 8),
             const Text(
               'Save your favourite handmade products here.',
               textAlign: TextAlign.center,
-              style: TextStyle(
-                color: Colors.grey,
-                fontSize: 15,
-              ),
+              style: TextStyle(color: Colors.grey, fontSize: 15),
             ),
           ],
         ),
@@ -169,11 +147,9 @@ class CustomerWishlistScreen extends StatelessWidget {
     try {
       final data = wishlistDoc.data();
 
-      final productId =
-          data['productId']?.toString() ?? '';
+      final productId = data['productId']?.toString() ?? '';
 
-      final artisanId =
-          data['artisanId']?.toString() ?? '';
+      final artisanId = data['artisanId']?.toString() ?? '';
 
       final cartId = '${artisanId}_$productId';
 
@@ -250,14 +226,11 @@ class _WishlistCard extends StatelessWidget {
   Widget build(BuildContext context) {
     final data = document.data();
 
-    final name =
-        data['name']?.toString() ?? 'Handmade Product';
+    final name = data['name']?.toString() ?? 'Handmade Product';
 
-    final category =
-        data['category']?.toString() ?? 'Handicraft';
+    final category = data['category']?.toString() ?? 'Handicraft';
 
-    final imageUrl =
-        data['imageUrl']?.toString() ?? '';
+    final imageUrl = data['imageUrl']?.toString() ?? '';
 
     final price = data['price'] ?? 0;
 
@@ -266,18 +239,14 @@ class _WishlistCard extends StatelessWidget {
       elevation: 0,
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(20),
-        side: const BorderSide(
-          color: Color(0xFFE5EAE7),
-        ),
+        side: const BorderSide(color: Color(0xFFD9D0C4)),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Stack(
             children: [
-              _ProductImage(
-                imageUrl: imageUrl,
-              ),
+              _ProductImage(imageUrl: imageUrl),
               Positioned(
                 top: 10,
                 right: 10,
@@ -300,20 +269,14 @@ class _WishlistCard extends StatelessWidget {
 
           Expanded(
             child: Padding(
-              padding: const EdgeInsets.fromLTRB(
-                14,
-                12,
-                14,
-                14,
-              ),
+              padding: const EdgeInsets.fromLTRB(14, 12, 14, 14),
               child: Column(
-                crossAxisAlignment:
-                    CrossAxisAlignment.start,
+                crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(
                     category,
                     style: const TextStyle(
-                      color: Color(0xFF176B5B),
+                      color: Color(0xFFA24B2A),
                       fontSize: 12,
                       fontWeight: FontWeight.w600,
                     ),
@@ -341,7 +304,7 @@ class _WishlistCard extends StatelessWidget {
                           style: const TextStyle(
                             fontSize: 18,
                             fontWeight: FontWeight.bold,
-                            color: Color(0xFF176B5B),
+                            color: Color(0xFFA24B2A),
                           ),
                         ),
                       ),
@@ -354,9 +317,7 @@ class _WishlistCard extends StatelessWidget {
                             Icons.shopping_cart_outlined,
                             size: 17,
                           ),
-                          label: const Text(
-                            'Cart',
-                          ),
+                          label: const Text('Cart'),
                         ),
                       ),
                     ],
@@ -374,9 +335,7 @@ class _WishlistCard extends StatelessWidget {
 class _ProductImage extends StatelessWidget {
   final String imageUrl;
 
-  const _ProductImage({
-    required this.imageUrl,
-  });
+  const _ProductImage({required this.imageUrl});
 
   @override
   Widget build(BuildContext context) {
@@ -386,11 +345,7 @@ class _ProductImage extends StatelessWidget {
         width: double.infinity,
         height: 185,
         fit: BoxFit.cover,
-        errorBuilder: (
-          context,
-          error,
-          stackTrace,
-        ) {
+        errorBuilder: (context, error, stackTrace) {
           return _placeholder();
         },
       );
@@ -408,7 +363,7 @@ class _ProductImage extends StatelessWidget {
         child: Icon(
           Icons.handyman_outlined,
           size: 58,
-          color: Color(0xFF176B5B),
+          color: Color(0xFFA24B2A),
         ),
       ),
     );

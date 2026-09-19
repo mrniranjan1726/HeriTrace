@@ -1,9 +1,12 @@
 import 'package:flutter/material.dart';
 
 import '../services/firebase_service.dart';
+import 'auth_gate.dart';
 
 class LoginScreen extends StatefulWidget {
-  const LoginScreen({super.key});
+  const LoginScreen({super.key, this.initialRegister = false});
+
+  final bool initialRegister;
 
   @override
   State<LoginScreen> createState() => _LoginScreenState();
@@ -18,14 +21,16 @@ class _LoginScreenState extends State<LoginScreen>
 
   late AnimationController _backgroundController;
   late AnimationController _cardController;
+  late AnimationController _pulseController;
   late Animation<double> _cardAnimation;
 
-  bool register = false;
+  late bool register = widget.initialRegister;
   bool busy = false;
   bool obscurePassword = true;
 
   String selectedRole = 'artisan';
   String? error;
+  String? success;
 
   @override
   void initState() {
@@ -47,6 +52,13 @@ class _LoginScreenState extends State<LoginScreen>
     );
 
     _cardController.forward();
+
+    _pulseController = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 1800),
+      lowerBound: 0.96,
+      upperBound: 1.04,
+    )..repeat(reverse: true);
   }
 
   @override
@@ -55,12 +67,43 @@ class _LoginScreenState extends State<LoginScreen>
     password.dispose();
     _backgroundController.dispose();
     _cardController.dispose();
+    _pulseController.dispose();
     super.dispose();
   }
 
   // ============================================================
   // LOGIN / REGISTER
   // ============================================================
+
+  Future<void> _forgotPassword() async {
+    final emailAddress = email.text.trim();
+    if (emailAddress.isEmpty) {
+      setState(() => error = 'Enter your email first to reset your password.');
+      return;
+    }
+
+    setState(() {
+      busy = true;
+      error = null;
+    });
+    try {
+      await firebaseService.sendPasswordResetEmail(emailAddress);
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Password reset link sent. Check your email.'),
+        ),
+      );
+    } on Exception catch (e) {
+      if (mounted) {
+        setState(() {
+          error = e.toString().replaceFirst('Exception: ', '');
+        });
+      }
+    } finally {
+      if (mounted) setState(() => busy = false);
+    }
+  }
 
   Future<void> submit() async {
     FocusScope.of(context).unfocus();
@@ -89,6 +132,7 @@ class _LoginScreenState extends State<LoginScreen>
     setState(() {
       busy = true;
       error = null;
+      success = null;
     });
 
     try {
@@ -104,15 +148,39 @@ class _LoginScreenState extends State<LoginScreen>
           password.text,
           role: selectedRole,
         );
+
+        // Firebase signs a newly registered user in automatically. Keep the
+        // user on this screen so they can explicitly sign in after seeing the
+        // confirmation state.
+        await firebaseService.auth.signOut();
+        if (!mounted) return;
+        setState(() {
+          register = false;
+          success = 'Account created successfully. Please login to continue.';
+        });
+        _cardController
+          ..reset()
+          ..forward();
+        return;
       } else {
         await firebaseService.login(email.text.trim(), password.text);
       }
-    } on Exception catch (e) {
+
+      if (!mounted) return;
+      Navigator.of(context).pushAndRemoveUntil(
+        MaterialPageRoute(builder: (_) => const AuthGate()),
+        (_) => false,
+      );
+    } on Object catch (e) {
       if (!mounted) return;
 
+      final message = e.toString().replaceFirst('Exception: ', '').trim();
       setState(() {
-        error = e.toString().replaceFirst('Exception: ', '');
+        error = message.isEmpty ? 'Login failed. Please try again.' : message;
       });
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text(error!)));
     } finally {
       if (mounted) {
         setState(() {
@@ -132,6 +200,7 @@ class _LoginScreenState extends State<LoginScreen>
     setState(() {
       register = !register;
       error = null;
+      success = null;
     });
 
     _cardController
@@ -193,7 +262,7 @@ class _LoginScreenState extends State<LoginScreen>
             gradient: LinearGradient(
               begin: Alignment.topLeft,
               end: Alignment.bottomRight,
-              colors: [Color(0xFFE8F5F0), Color(0xFFF7F8F4), Color(0xFFFDF3E8)],
+              colors: [Color(0xFFF2E1D4), Color(0xFFF4EFE7), Color(0xFFF6EBCF)],
             ),
           ),
           child: Stack(
@@ -201,12 +270,12 @@ class _LoginScreenState extends State<LoginScreen>
               Positioned(
                 top: -80 + (value * 25),
                 left: -60,
-                child: _glowCircle(size: 240, color: const Color(0xFF176B5B)),
+                child: _glowCircle(size: 240, color: const Color(0xFFA24B2A)),
               ),
               Positioned(
                 bottom: -100 + (value * 35),
                 right: -70,
-                child: _glowCircle(size: 280, color: const Color(0xFFE68A3A)),
+                child: _glowCircle(size: 280, color: const Color(0xFFD39A3F)),
               ),
               Positioned(
                 top: 180 + (value * 35),
@@ -217,6 +286,22 @@ class _LoginScreenState extends State<LoginScreen>
                 bottom: 180 - (value * 25),
                 left: 100,
                 child: _smallCircle(),
+              ),
+              Positioned(
+                top: 90 + (value * 20),
+                right: -75,
+                child: Transform.rotate(
+                  angle: value * 2 * 3.14159,
+                  child: _orbitRing(180, const Color(0x33A24B2A)),
+                ),
+              ),
+              Positioned(
+                bottom: -65 - (value * 25),
+                left: -55,
+                child: Transform.rotate(
+                  angle: -value * 2 * 3.14159,
+                  child: _orbitRing(210, const Color(0x33D39A3F)),
+                ),
               ),
             ],
           ),
@@ -243,6 +328,17 @@ class _LoginScreenState extends State<LoginScreen>
       decoration: const BoxDecoration(
         color: Color(0x33176B5B),
         shape: BoxShape.circle,
+      ),
+    );
+  }
+
+  Widget _orbitRing(double size, Color color) {
+    return Container(
+      width: size,
+      height: size,
+      decoration: BoxDecoration(
+        shape: BoxShape.circle,
+        border: Border.all(color: color, width: 18),
       ),
     );
   }
@@ -304,7 +400,7 @@ class _LoginScreenState extends State<LoginScreen>
         gradient: LinearGradient(
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
-          colors: [Color(0xFF176B5B), Color(0xFF0E5044)],
+          colors: [Color(0xFF1F4D3B), Color(0xFF102F25)],
         ),
       ),
       child: Column(
@@ -341,7 +437,7 @@ class _LoginScreenState extends State<LoginScreen>
           const Text(
             'Empower artisans.',
             style: TextStyle(
-              color: Color(0xFFFFD6A8),
+              color: Color(0xFFE8B66E),
               fontSize: 36,
               height: 1.1,
               fontWeight: FontWeight.w800,
@@ -422,28 +518,56 @@ class _LoginScreenState extends State<LoginScreen>
         Center(
           child: Column(
             children: [
-              Container(
-                width: 62,
-                height: 62,
-                decoration: BoxDecoration(
-                  color: const Color(0xFFE4F4EF),
-                  borderRadius: BorderRadius.circular(19),
+              AnimatedBuilder(
+                animation: _pulseController,
+                builder: (context, child) => Transform.scale(
+                  scale: _pulseController.value,
+                  child: child,
                 ),
-                child: const Icon(
-                  Icons.storefront_rounded,
-                  color: Color(0xFF176B5B),
-                  size: 32,
+                child: Container(
+                  width: 62,
+                  height: 62,
+                  decoration: BoxDecoration(
+                    color: const Color(0xFFE9D9C6),
+                    borderRadius: BorderRadius.circular(19),
+                    boxShadow: [
+                      BoxShadow(
+                        color: const Color(0xFFA24B2A).withValues(alpha: .18),
+                        blurRadius: 18,
+                        spreadRadius: 2,
+                      ),
+                    ],
+                  ),
+                  child: const Icon(
+                    Icons.auto_awesome_rounded,
+                    color: Color(0xFFA24B2A),
+                    size: 32,
+                  ),
                 ),
               ),
 
               const SizedBox(height: 14),
 
-              const Text(
-                'HeriTrace',
-                style: TextStyle(
-                  fontSize: 28,
-                  fontWeight: FontWeight.w800,
-                  color: Color(0xFF18221F),
+              AnimatedSwitcher(
+                duration: const Duration(milliseconds: 450),
+                transitionBuilder: (child, animation) => FadeTransition(
+                  opacity: animation,
+                  child: SlideTransition(
+                    position: Tween<Offset>(
+                      begin: const Offset(0, .25),
+                      end: Offset.zero,
+                    ).animate(animation),
+                    child: child,
+                  ),
+                ),
+                child: Text(
+                  register ? 'Join HeriTrace' : 'HeriTrace',
+                  key: ValueKey(register),
+                  style: const TextStyle(
+                    fontSize: 28,
+                    fontWeight: FontWeight.w800,
+                    color: Color(0xFF18221F),
+                  ),
                 ),
               ),
 
@@ -461,7 +585,14 @@ class _LoginScreenState extends State<LoginScreen>
 
         // ROLE SELECTOR
         AnimatedSwitcher(
-          duration: const Duration(milliseconds: 300),
+          duration: const Duration(milliseconds: 450),
+          transitionBuilder: (child, animation) => SizeTransition(
+            sizeFactor: CurvedAnimation(
+              parent: animation,
+              curve: Curves.easeOutCubic,
+            ),
+            child: FadeTransition(opacity: animation, child: child),
+          ),
           child: register
               ? Column(
                   key: const ValueKey('roles'),
@@ -546,10 +677,44 @@ class _LoginScreenState extends State<LoginScreen>
           ),
         ),
 
-        // ERROR
+        // ACCOUNT CREATED / ERROR
         AnimatedSwitcher(
           duration: const Duration(milliseconds: 250),
-          child: error == null
+          child: success != null
+              ? Container(
+                  key: const ValueKey('success'),
+                  width: double.infinity,
+                  margin: const EdgeInsets.only(top: 14),
+                  padding: const EdgeInsets.all(12),
+                  decoration: BoxDecoration(
+                    color: const Color(0xFFEAF4E7),
+                    borderRadius: BorderRadius.circular(12),
+                    border: Border.all(color: const Color(0xFFB9D7B2)),
+                  ),
+                  child: Row(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      const Icon(
+                        Icons.check_circle_outline_rounded,
+                        color: Color(0xFF2E7D4F),
+                        size: 18,
+                      ),
+                      const SizedBox(width: 8),
+                      Expanded(
+                        child: Text(
+                          success!,
+                          style: const TextStyle(
+                            color: Color(0xFF27653F),
+                            fontSize: 12,
+                            height: 1.35,
+                            fontWeight: FontWeight.w600,
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                )
+              : error == null
               ? const SizedBox.shrink()
               : Container(
                   key: const ValueKey('error'),
@@ -586,6 +751,15 @@ class _LoginScreenState extends State<LoginScreen>
 
         const SizedBox(height: 22),
 
+        if (!register)
+          Align(
+            alignment: Alignment.centerRight,
+            child: TextButton(
+              onPressed: busy ? null : _forgotPassword,
+              child: const Text('Forgot password?'),
+            ),
+          ),
+
         // MAIN BUTTON
         SizedBox(
           width: double.infinity,
@@ -593,7 +767,7 @@ class _LoginScreenState extends State<LoginScreen>
           child: FilledButton(
             onPressed: busy ? null : submit,
             style: FilledButton.styleFrom(
-              backgroundColor: const Color(0xFF176B5B),
+              backgroundColor: const Color(0xFFA24B2A),
               disabledBackgroundColor: const Color(0xFF9ABDB5),
               shape: RoundedRectangleBorder(
                 borderRadius: BorderRadius.circular(15),
@@ -641,7 +815,7 @@ class _LoginScreenState extends State<LoginScreen>
                   TextSpan(
                     text: register ? 'Login' : 'Create one',
                     style: const TextStyle(
-                      color: Color(0xFF176B5B),
+                      color: Color(0xFFA24B2A),
                       fontWeight: FontWeight.w800,
                     ),
                   ),
@@ -683,7 +857,7 @@ class _LoginScreenState extends State<LoginScreen>
           color: selected ? const Color(0xFFE4F4EF) : const Color(0xFFF8F9F7),
           borderRadius: BorderRadius.circular(15),
           border: Border.all(
-            color: selected ? const Color(0xFF176B5B) : const Color(0xFFE3E8E5),
+            color: selected ? const Color(0xFFA24B2A) : const Color(0xFFE3D9CC),
             width: selected ? 1.5 : 1,
           ),
         ),
@@ -694,7 +868,7 @@ class _LoginScreenState extends State<LoginScreen>
               height: 38,
               decoration: BoxDecoration(
                 color: selected
-                    ? const Color(0xFF176B5B)
+                    ? const Color(0xFFA24B2A)
                     : const Color(0xFFE8ECEA),
                 borderRadius: BorderRadius.circular(11),
               ),
@@ -715,7 +889,7 @@ class _LoginScreenState extends State<LoginScreen>
                       fontSize: 12,
                       fontWeight: FontWeight.w800,
                       color: selected
-                          ? const Color(0xFF176B5B)
+                          ? const Color(0xFFA24B2A)
                           : const Color(0xFF27312D),
                     ),
                   ),
@@ -797,7 +971,7 @@ class _LoginScreenState extends State<LoginScreen>
         ),
         focusedBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(14),
-          borderSide: const BorderSide(color: Color(0xFF176B5B), width: 1.5),
+          borderSide: const BorderSide(color: Color(0xFFA24B2A), width: 1.5),
         ),
       ),
     );

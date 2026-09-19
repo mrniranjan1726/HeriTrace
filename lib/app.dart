@@ -17,12 +17,17 @@ import 'screens/artisan_auctions_screen.dart';
 import 'screens/customer_auctions_screen.dart';
 import 'screens/customer_profile_screen.dart';
 import 'screens/heritage_features_screen.dart';
+import 'screens/admin_profile_screen.dart';
+import 'screens/about_screen.dart';
 
 class HeriTraceApp extends StatelessWidget {
   const HeriTraceApp({super.key});
 
-  static const Color primary = Color(0xFF176B5B);
-  static const Color background = Color(0xFFF7F8F4);
+  static const Color primary = Color(0xFFA24B2A);
+  static const Color background = Color(0xFFF4EFE7);
+  static const Color ink = Color(0xFF1D2A24);
+  static const Color forest = Color(0xFF1F4D3B);
+  static const Color gold = Color(0xFFD39A3F);
 
   @override
   Widget build(BuildContext context) {
@@ -38,22 +43,30 @@ class HeriTraceApp extends StatelessWidget {
         splashFactory: NoSplash.splashFactory,
         scaffoldBackgroundColor: background,
 
-        colorScheme: ColorScheme.fromSeed(
-          seedColor: primary,
-          brightness: Brightness.light,
-        ),
+        colorScheme:
+            ColorScheme.fromSeed(
+              seedColor: primary,
+              brightness: Brightness.light,
+            ).copyWith(
+              primary: primary,
+              secondary: forest,
+              tertiary: gold,
+              surface: const Color(0xFFFFFCF7),
+              onSurface: ink,
+              outline: const Color(0xFFD9D0C4),
+            ),
 
         fontFamily: 'Arial',
 
         appBarTheme: const AppBarTheme(
           backgroundColor: background,
-          foregroundColor: Color(0xFF17201D),
+          foregroundColor: ink,
           elevation: 0,
           centerTitle: false,
         ),
 
         cardTheme: CardThemeData(
-          color: Colors.white,
+          color: const Color(0xFFFFFCF7),
           elevation: 0,
           margin: EdgeInsets.zero,
           shape: RoundedRectangleBorder(
@@ -63,7 +76,7 @@ class HeriTraceApp extends StatelessWidget {
 
         inputDecorationTheme: InputDecorationTheme(
           filled: true,
-          fillColor: Colors.white,
+          fillColor: const Color(0xFFFFFCF7),
 
           contentPadding: const EdgeInsets.symmetric(
             horizontal: 16,
@@ -72,12 +85,12 @@ class HeriTraceApp extends StatelessWidget {
 
           border: OutlineInputBorder(
             borderRadius: BorderRadius.circular(14),
-            borderSide: const BorderSide(color: Color(0xFFE5EAE7)),
+            borderSide: const BorderSide(color: Color(0xFFD9D0C4)),
           ),
 
           enabledBorder: OutlineInputBorder(
             borderRadius: BorderRadius.circular(14),
-            borderSide: const BorderSide(color: Color(0xFFE5EAE7)),
+            borderSide: const BorderSide(color: Color(0xFFD9D0C4)),
           ),
 
           focusedBorder: OutlineInputBorder(
@@ -142,6 +155,12 @@ class HeriTraceApp extends StatelessWidget {
         },
         '/heritage-features': (context) {
           return const HeritageFeaturesScreen();
+        },
+        '/admin-profile': (context) {
+          return const AdminProfileScreen();
+        },
+        '/about': (context) {
+          return const AboutScreen();
         },
         // ----------------------------------------------------------
         // ARTISAN

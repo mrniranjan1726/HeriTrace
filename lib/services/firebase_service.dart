@@ -72,14 +72,20 @@ class FirebaseService {
 
   Future<UserCredential> login(String email, String password) async {
     try {
-      final credential = await auth.signInWithEmailAndPassword(
-        email: email.trim(),
-        password: password,
-      );
+      final credential = await auth
+          .signInWithEmailAndPassword(email: email.trim(), password: password)
+          .timeout(
+            const Duration(seconds: 20),
+            onTimeout: () => throw Exception(
+              'Login timed out. Please check your internet connection and try again.',
+            ),
+          );
 
       return credential;
     } on FirebaseAuthException catch (e) {
       throw Exception(_authErrorMessage(e));
+    } on Exception {
+      rethrow;
     } catch (e) {
       if (e is Exception) {
         rethrow;
@@ -95,6 +101,14 @@ class FirebaseService {
 
   Future<void> logout() async {
     await auth.signOut();
+  }
+
+  Future<void> sendPasswordResetEmail(String email) async {
+    try {
+      await auth.sendPasswordResetEmail(email: email.trim());
+    } on FirebaseAuthException catch (e) {
+      throw Exception(_authErrorMessage(e));
+    }
   }
 
   Future<String> uploadImage(Uint8List bytes, String path) async {

@@ -1,12 +1,12 @@
 import 'package:flutter/material.dart';
 
-import 'dashboard_screen.dart';
 import 'products_screen.dart';
 import 'add_product_screen.dart';
 import 'pricing_screen.dart';
 import 'marketplace_screen.dart';
 import 'business_screen.dart';
 import 'image_studio_screen.dart';
+import 'artisan_profile_screen.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -25,12 +25,12 @@ class _HomeScreenState extends State<HomeScreen> {
     super.initState();
 
     _pages = const [
-      DashboardScreen(),
+      BusinessScreen(),
       ProductsScreen(),
       AddProductScreen(),
       PricingScreen(),
       MarketplaceScreen(),
-      BusinessScreen(),
+      ArtisanProfileScreen(),
     ];
   }
 
@@ -65,7 +65,7 @@ class _HomeScreenState extends State<HomeScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(0xFFF7F8F4),
+      backgroundColor: const Color(0xFFF4EFE7),
 
       // ========================================================
       // PAGE CONTENT
@@ -79,7 +79,7 @@ class _HomeScreenState extends State<HomeScreen> {
           ? FloatingActionButton.extended(
               onPressed: _openImageStudio,
 
-              backgroundColor: const Color(0xFF176B5B),
+              backgroundColor: const Color(0xFFA24B2A),
 
               foregroundColor: Colors.white,
 
@@ -165,9 +165,9 @@ class _HomeScreenState extends State<HomeScreen> {
           // AI MANAGER
           // ====================================================
           NavigationDestination(
-            icon: Icon(Icons.insights_outlined),
-            selectedIcon: Icon(Icons.insights),
-            label: 'AI Manager',
+            icon: Icon(Icons.person_outline_rounded),
+            selectedIcon: Icon(Icons.person_rounded),
+            label: 'Profile',
           ),
         ],
       ),
