@@ -491,6 +491,15 @@ class _CustomerCartScreenState extends State<CustomerCartScreen> {
 
                           return Card(
                             margin: const EdgeInsets.only(bottom: 10),
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(12),
+                              side: BorderSide(
+                                color: selected
+                                    ? const Color(0xFFA24B2A)
+                                    : const Color(0xFFD9D0C4),
+                                width: selected ? 1.5 : 0.8,
+                              ),
+                            ),
                             child: InkWell(
                               borderRadius: BorderRadius.circular(12),
                               onTap: () {

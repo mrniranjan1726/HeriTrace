@@ -634,6 +634,22 @@ class _BusinessScreenState extends State<BusinessScreen> {
                     ),
                   ),
                 ),
+                _actionCard(
+                  icon: Icons.biotech_rounded,
+                  title: 'Craft DNA',
+                  subtitle: 'Material & dye genetics',
+                  color: const Color(0xFF00897B),
+                  onTap: () =>
+                      Navigator.pushNamed(context, '/heritage-features'),
+                ),
+                _actionCard(
+                  icon: Icons.fingerprint_rounded,
+                  title: 'Technique Fingerprint',
+                  subtitle: 'Biometric handcraft signature',
+                  color: const Color(0xFF5E35B1),
+                  onTap: () =>
+                      Navigator.pushNamed(context, '/heritage-features'),
+                ),
               ],
             );
           },
