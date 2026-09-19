@@ -1,6 +1,13 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_animate/flutter_animate.dart';
+
+import 'add_product_screen.dart';
+import 'pricing_screen.dart';
+import 'image_studio_screen.dart';
+import 'artisan_orders_screen.dart';
+import 'artisan_auctions_screen.dart';
 
 class BusinessScreen extends StatefulWidget {
   const BusinessScreen({super.key});
@@ -12,6 +19,14 @@ class BusinessScreen extends StatefulWidget {
 class _BusinessScreenState extends State<BusinessScreen> {
   final FirebaseFirestore _db = FirebaseFirestore.instance;
   final FirebaseAuth _auth = FirebaseAuth.instance;
+
+  static const _terracotta = Color(0xFFA24B2A);
+  static const _forest = Color(0xFF1F4D3B);
+  static const _gold = Color(0xFFD39A3F);
+  static const _cream = Color(0xFFF4EFE7);
+  static const _surface = Color(0xFFFFFCF7);
+  static const _ink = Color(0xFF1D2A24);
+  static const _muted = Color(0xFF68746D);
 
   bool loading = true;
 
@@ -26,6 +41,7 @@ class _BusinessScreenState extends State<BusinessScreen> {
   List<Map<String, dynamic>> products = [];
   List<Map<String, dynamic>> recentOrders = [];
   String? orderDataWarning;
+  String artisanName = 'Master Artisan';
 
   @override
   void initState() {
@@ -36,18 +52,26 @@ class _BusinessScreenState extends State<BusinessScreen> {
   // ============================================================
   // LOAD BUSINESS DATA
   // ============================================================
-
   Future<void> loadBusinessData() async {
     final user = _auth.currentUser;
 
     if (user == null) {
-      setState(() {
-        loading = false;
-      });
+      if (mounted) setState(() => loading = false);
       return;
     }
 
     try {
+      // 1. Load user profile name
+      final userDoc = await _db.collection('users').doc(user.uid).get();
+      if (userDoc.exists) {
+        final data = userDoc.data() ?? {};
+        artisanName = data['name']?.toString() ??
+            data['displayName']?.toString() ??
+            user.displayName ??
+            'Master Artisan';
+      }
+
+      // 2. Load products
       final productSnapshot = await _db
           .collection('users')
           .doc(user.uid)
@@ -59,368 +83,268 @@ class _BusinessScreenState extends State<BusinessScreen> {
         return {'id': doc.id, ...data};
       }).toList();
 
+      // 3. Load orders via collectionGroup
+      int totalOrders = 0;
+      int pending = 0;
+      int delivered = 0;
+      double sales = 0;
+      double pendingAmount = 0;
+      final List<Map<String, dynamic>> artisanOrders = [];
+
+      try {
+        final orderSnapshot = await _db.collectionGroup('orders').get();
+
+        for (final doc in orderSnapshot.docs) {
+          final data = doc.data();
+          final dynamic rawItems = data['items'];
+          if (rawItems is! List) continue;
+
+          bool belongsToArtisan = false;
+          for (final item in rawItems) {
+            if (item is! Map) continue;
+            final artisanId = item['artisanId']?.toString() ??
+                item['artisanID']?.toString() ??
+                item['ownerId']?.toString() ??
+                item['userId']?.toString();
+
+            if (artisanId == user.uid) {
+              belongsToArtisan = true;
+              break;
+            }
+          }
+
+          if (!belongsToArtisan) continue;
+
+          totalOrders++;
+          final status = data['status']?.toString().toLowerCase() ?? 'pending';
+          final total = _toDouble(data['total']);
+
+          if (status == 'pending' ||
+              status == 'confirmed' ||
+              status == 'processing' ||
+              status == 'shipped') {
+            pending++;
+            pendingAmount += total;
+          }
+
+          if (status == 'delivered') {
+            delivered++;
+            sales += total;
+          }
+
+          artisanOrders.add({'id': doc.id, ...data});
+        }
+
+        artisanOrders.sort((a, b) {
+          final aDate = _timestampToDate(a['createdAt']);
+          final bDate = _timestampToDate(b['createdAt']);
+          return bDate.compareTo(aDate);
+        });
+      } catch (e) {
+        debugPrint('Orders loading note: $e');
+      }
+
       if (!mounted) return;
       setState(() {
         products = loadedProducts;
         productCount = loadedProducts.length;
-        loading = false;
-        orderDataWarning = null;
-      });
-    } on FirebaseException catch (e) {
-      debugPrint('BUSINESS PRODUCTS ERROR: ${e.code}: ${e.message}');
-      if (!mounted) return;
-      setState(() {
-        loading = false;
-      });
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text('Could not load products: ${e.message ?? e.code}'),
-        ),
-      );
-      return;
-    } catch (e) {
-      debugPrint('BUSINESS PRODUCTS ERROR: $e');
-      if (!mounted) return;
-      setState(() {
-        loading = false;
-      });
-      ScaffoldMessenger.of(
-        context,
-      ).showSnackBar(SnackBar(content: Text('Could not load products: $e')));
-      return;
-    }
-
-    try {
-      final orderSnapshot = await _db.collectionGroup('orders').get();
-
-      int totalOrders = 0;
-      int pending = 0;
-      int delivered = 0;
-
-      double sales = 0;
-      double pendingAmount = 0;
-
-      final List<Map<String, dynamic>> artisanOrders = [];
-
-      for (final doc in orderSnapshot.docs) {
-        final data = doc.data();
-
-        final dynamic rawItems = data['items'];
-
-        if (rawItems is! List) {
-          continue;
-        }
-
-        bool belongsToArtisan = false;
-
-        for (final item in rawItems) {
-          if (item is! Map) continue;
-
-          final artisanId =
-              item['artisanId']?.toString() ??
-              item['artisanID']?.toString() ??
-              item['ownerId']?.toString() ??
-              item['userId']?.toString();
-
-          if (artisanId == user.uid) {
-            belongsToArtisan = true;
-            break;
-          }
-        }
-
-        if (!belongsToArtisan) {
-          continue;
-        }
-
-        totalOrders++;
-
-        final status = data['status']?.toString().toLowerCase() ?? 'pending';
-
-        final total = _toDouble(data['total']);
-
-        if (status == 'pending' ||
-            status == 'confirmed' ||
-            status == 'processing' ||
-            status == 'shipped') {
-          pending++;
-          pendingAmount += total;
-        }
-
-        if (status == 'delivered') {
-          delivered++;
-          sales += total;
-        }
-
-        artisanOrders.add({'id': doc.id, ...data});
-      }
-
-      // Sort newest first.
-      artisanOrders.sort((a, b) {
-        final aDate = _timestampToDate(a['createdAt']);
-        final bDate = _timestampToDate(b['createdAt']);
-
-        return bDate.compareTo(aDate);
-      });
-
-      if (!mounted) return;
-      setState(() {
         orderCount = totalOrders;
         pendingOrders = pending;
         deliveredOrders = delivered;
         totalSales = sales;
         pendingSales = pendingAmount;
         recentOrders = artisanOrders.take(5).toList();
+        loading = false;
         orderDataWarning = null;
       });
-    } on FirebaseException catch (e) {
-      debugPrint('BUSINESS ORDERS ERROR: ${e.code}: ${e.message}');
-      if (!mounted) return;
-      setState(() {
-        orderDataWarning =
-            'Order data is temporarily unavailable. Products are still live.';
-      });
     } catch (e) {
-      debugPrint('BUSINESS ORDERS ERROR: $e');
-      if (!mounted) return;
-      setState(() {
-        orderDataWarning =
-            'Order data is temporarily unavailable. Products are still live.';
-      });
+      debugPrint('Error loading artisan data: $e');
+      if (mounted) setState(() => loading = false);
     }
   }
 
-  // ============================================================
-  // DOUBLE CONVERSION
-  // ============================================================
-
   double _toDouble(dynamic value) {
-    if (value is num) {
-      return value.toDouble();
-    }
-
+    if (value is num) return value.toDouble();
     return double.tryParse(value?.toString() ?? '') ?? 0;
   }
 
-  // ============================================================
-  // DATE CONVERSION
-  // ============================================================
-
   DateTime _timestampToDate(dynamic value) {
-    if (value is Timestamp) {
-      return value.toDate();
-    }
-
-    if (value is DateTime) {
-      return value;
-    }
-
+    if (value is Timestamp) return value.toDate();
+    if (value is DateTime) return value;
     return DateTime.fromMillisecondsSinceEpoch(0);
   }
-
-  // ============================================================
-  // BUSINESS HEALTH
-  // ============================================================
-
-  String get businessStatus {
-    if (productCount == 0) {
-      return 'Start adding products';
-    }
-
-    if (orderCount == 0) {
-      return 'Ready for your first order';
-    }
-
-    if (pendingOrders > 0) {
-      return 'Orders need attention';
-    }
-
-    return 'Business is active';
-  }
-
-  IconData get businessStatusIcon {
-    if (productCount == 0) {
-      return Icons.inventory_2_outlined;
-    }
-
-    if (orderCount == 0) {
-      return Icons.shopping_bag_outlined;
-    }
-
-    if (pendingOrders > 0) {
-      return Icons.notifications_active_outlined;
-    }
-
-    return Icons.check_circle_outline;
-  }
-
-  // ============================================================
-  // BUILD
-  // ============================================================
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      backgroundColor: _cream,
       appBar: AppBar(
-        title: const Text('AI Business Manager'),
+        backgroundColor: _cream,
+        elevation: 0,
+        centerTitle: false,
+        title: Row(
+          children: [
+            Container(
+              padding: const EdgeInsets.all(7),
+              decoration: BoxDecoration(
+                color: _terracotta.withValues(alpha: 0.12),
+                borderRadius: BorderRadius.circular(10),
+              ),
+              child: const Icon(Icons.handyman_rounded, color: _terracotta, size: 20),
+            ),
+            const SizedBox(width: 10),
+            const Text(
+              'Artisan Atelier & Studio',
+              style: TextStyle(
+                color: _ink,
+                fontSize: 19,
+                fontWeight: FontWeight.w900,
+                letterSpacing: -0.4,
+              ),
+            ),
+          ],
+        ),
         actions: [
           IconButton(
-            tooltip: 'Refresh',
+            tooltip: 'Live Auctions',
+            onPressed: () => Navigator.of(context).push(
+              MaterialPageRoute(builder: (_) => const ArtisanAuctionsScreen()),
+            ),
+            icon: const Icon(Icons.gavel_rounded, color: _gold),
+          ),
+          IconButton(
+            tooltip: 'Refresh Atelier',
             onPressed: loading ? null : loadBusinessData,
-            icon: const Icon(Icons.refresh),
+            icon: const Icon(Icons.refresh_rounded, color: _ink),
           ),
         ],
       ),
-
       body: loading
-          ? const Center(child: CircularProgressIndicator())
+          ? const Center(child: CircularProgressIndicator(color: _terracotta))
           : RefreshIndicator(
               onRefresh: loadBusinessData,
+              color: _terracotta,
               child: ListView(
-                padding: const EdgeInsets.all(20),
+                physics: const BouncingScrollPhysics(),
+                padding: const EdgeInsets.fromLTRB(20, 10, 20, 35),
                 children: [
-                  buildHeader(),
-
-                  const SizedBox(height: 22),
-
-                  if (orderDataWarning != null) _buildDataWarning(),
-
-                  if (orderDataWarning != null) const SizedBox(height: 18),
-
-                  buildOverviewSection(),
-
-                  const SizedBox(height: 25),
-
-                  buildBusinessHealth(),
-
-                  const SizedBox(height: 25),
-
-                  buildInsightsSection(),
-
-                  const SizedBox(height: 25),
-
-                  buildRecentOrders(),
-
-                  const SizedBox(height: 25),
-
-                  buildInventorySection(),
-
-                  const SizedBox(height: 25),
-
-                  buildBusinessTip(),
-
-                  const SizedBox(height: 30),
+                  _buildAtelierHeroBanner(),
+                  const SizedBox(height: 24),
+                  _buildStudioQuickActions(),
+                  const SizedBox(height: 28),
+                  _buildFinancialAndImpactMetrics(),
+                  const SizedBox(height: 28),
+                  _buildMasterpiecesSection(),
+                  const SizedBox(height: 28),
+                  _buildPatronOrdersSection(),
+                  const SizedBox(height: 28),
+                  _buildHeritageAdvisoryCard(),
                 ],
               ),
             ),
     );
   }
 
-  Widget _buildDataWarning() {
+  // ============================================================
+  // 1. ATELIER HERO BANNER
+  // ============================================================
+  Widget _buildAtelierHeroBanner() {
     return Container(
-      padding: const EdgeInsets.all(14),
+      width: double.infinity,
+      padding: const EdgeInsets.all(26),
       decoration: BoxDecoration(
-        color: Colors.orange.withValues(alpha: 0.10),
-        borderRadius: BorderRadius.circular(14),
-        border: Border.all(color: Colors.orange.withValues(alpha: 0.35)),
-      ),
-      child: Row(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          const Icon(Icons.info_outline, color: Colors.orange),
-          const SizedBox(width: 10),
-          Expanded(
-            child: Text(
-              orderDataWarning!,
-              style: const TextStyle(fontSize: 13, height: 1.35),
-            ),
+        borderRadius: BorderRadius.circular(28),
+        gradient: const LinearGradient(
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+          colors: [Color(0xFF8A3418), Color(0xFF1A4533)],
+        ),
+        boxShadow: [
+          BoxShadow(
+            color: const Color(0xFF8A3418).withValues(alpha: 0.28),
+            blurRadius: 28,
+            offset: const Offset(0, 12),
           ),
         ],
       ),
-    );
-  }
-
-  // ============================================================
-  // HEADER
-  // ============================================================
-
-  Widget buildHeader() {
-    final primary = Theme.of(context).colorScheme.primary;
-
-    return Container(
-      width: double.infinity,
-      padding: const EdgeInsets.all(24),
-      decoration: BoxDecoration(
-        borderRadius: BorderRadius.circular(26),
-        gradient: LinearGradient(
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight,
-          colors: [
-            primary.withValues(alpha: 0.14),
-            primary.withValues(alpha: 0.035),
-          ],
-        ),
-        border: Border.all(color: Colors.grey.withValues(alpha: 0.18)),
-      ),
-      child: Row(
+      child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Container(
-            height: 62,
-            width: 62,
-            decoration: BoxDecoration(
-              borderRadius: BorderRadius.circular(18),
-              color: primary.withValues(alpha: 0.12),
-            ),
-            child: Icon(Icons.auto_awesome, size: 31, color: primary),
-          ),
-
-          const SizedBox(width: 16),
-
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                const Text(
-                  'AI Business Manager',
-                  style: TextStyle(fontSize: 25, fontWeight: FontWeight.bold),
+          Row(
+            children: [
+              Container(
+                width: 60,
+                height: 60,
+                decoration: BoxDecoration(
+                  color: Colors.white.withValues(alpha: 0.15),
+                  shape: BoxShape.circle,
+                  border: Border.all(color: const Color(0xFFE8C582), width: 2),
                 ),
-
-                const SizedBox(height: 6),
-
-                const Text(
-                  'Your intelligent business companion for managing products, orders and sales.',
-                  style: TextStyle(
-                    color: Colors.grey,
-                    fontSize: 14,
-                    height: 1.45,
-                  ),
-                ),
-
-                const SizedBox(height: 14),
-
-                Container(
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: 11,
-                    vertical: 7,
-                  ),
-                  decoration: BoxDecoration(
-                    borderRadius: BorderRadius.circular(20),
-                    color: primary.withValues(alpha: 0.09),
-                  ),
-                  child: Row(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      Icon(Icons.circle, size: 8, color: primary),
-                      const SizedBox(width: 7),
-                      Text(
-                        'Live business data',
-                        style: TextStyle(
-                          color: primary,
-                          fontSize: 12,
-                          fontWeight: FontWeight.bold,
-                        ),
+                child: const Icon(Icons.workspace_premium_rounded, color: Color(0xFFE8C582), size: 32),
+              ),
+              const SizedBox(width: 16),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      artisanName,
+                      style: const TextStyle(
+                        color: Colors.white,
+                        fontSize: 22,
+                        fontWeight: FontWeight.w900,
+                        letterSpacing: -0.4,
                       ),
-                    ],
+                    ),
+                    const SizedBox(height: 3),
+                    Row(
+                      children: [
+                        const Icon(Icons.verified, color: Color(0xFFE8C582), size: 15),
+                        const SizedBox(width: 5),
+                        Text(
+                          'GI Heritage Verified Artisan',
+                          style: TextStyle(
+                            color: Colors.white.withValues(alpha: 0.9),
+                            fontSize: 12,
+                            fontWeight: FontWeight.w700,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ],
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 20),
+          Container(
+            padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
+            decoration: BoxDecoration(
+              color: Colors.white.withValues(alpha: 0.12),
+              borderRadius: BorderRadius.circular(30),
+              border: Border.all(color: Colors.white.withValues(alpha: 0.2)),
+            ),
+            child: Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Container(
+                  width: 8,
+                  height: 8,
+                  decoration: const BoxDecoration(
+                    color: Color(0xFF4CAF50),
+                    shape: BoxShape.circle,
+                  ),
+                ).animate(onPlay: (c) => c.repeat(reverse: true)).scale(
+                      begin: const Offset(0.8, 0.8),
+                      end: const Offset(1.3, 1.3),
+                    ),
+                const SizedBox(width: 8),
+                const Text(
+                  'Atelier Active • Accepting Custom Patron Commissions',
+                  style: TextStyle(
+                    color: Colors.white,
+                    fontSize: 12,
+                    fontWeight: FontWeight.w600,
                   ),
                 ),
               ],
@@ -428,72 +352,84 @@ class _BusinessScreenState extends State<BusinessScreen> {
           ),
         ],
       ),
-    );
+    ).animate().fadeIn(duration: 500.ms).slideY(begin: -0.06, end: 0);
   }
 
   // ============================================================
-  // OVERVIEW
+  // 2. STUDIO QUICK ACTIONS (AI VISION, STORY, PRICING, AUCTION)
   // ============================================================
-
-  Widget buildOverviewSection() {
+  Widget _buildStudioQuickActions() {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        const Text(
-          'Business Overview',
-          style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+        Row(
+          children: [
+            const Text(
+              'Artisan AI Studio Tools',
+              style: TextStyle(
+                color: _ink,
+                fontSize: 19,
+                fontWeight: FontWeight.w900,
+                letterSpacing: -0.4,
+              ),
+            ),
+            const Spacer(),
+            Text(
+              'AI Powered',
+              style: TextStyle(
+                color: _terracotta,
+                fontSize: 12,
+                fontWeight: FontWeight.w800,
+              ),
+            ),
+          ],
         ),
-
         const SizedBox(height: 14),
-
         LayoutBuilder(
           builder: (context, constraints) {
-            final width = constraints.maxWidth;
-
-            final cardWidth = width > 650 ? (width - 18) / 2 : width;
-
-            return Wrap(
-              spacing: 18,
-              runSpacing: 18,
+            final isWide = constraints.maxWidth > 650;
+            return GridView.count(
+              crossAxisCount: isWide ? 4 : 2,
+              shrinkWrap: true,
+              physics: const NeverScrollableScrollPhysics(),
+              crossAxisSpacing: 14,
+              mainAxisSpacing: 14,
+              childAspectRatio: isWide ? 1.3 : 1.15,
               children: [
-                SizedBox(
-                  width: cardWidth,
-                  child: overviewCard(
-                    title: 'Products',
-                    value: productCount.toString(),
-                    subtitle: 'Published products',
-                    icon: Icons.inventory_2_outlined,
+                _actionCard(
+                  icon: Icons.auto_fix_high_rounded,
+                  title: 'AI Photo Studio',
+                  subtitle: 'Studio lighting & framing',
+                  color: _terracotta,
+                  onTap: () => Navigator.of(context).push(
+                    MaterialPageRoute(builder: (_) => const ImageStudioScreen()),
                   ),
                 ),
-
-                SizedBox(
-                  width: cardWidth,
-                  child: overviewCard(
-                    title: 'Orders',
-                    value: orderCount.toString(),
-                    subtitle: 'Total orders',
-                    icon: Icons.shopping_bag_outlined,
+                _actionCard(
+                  icon: Icons.history_edu_rounded,
+                  title: 'Story Writer',
+                  subtitle: 'Cultural craft storytelling',
+                  color: _forest,
+                  onTap: () => Navigator.of(context).push(
+                    MaterialPageRoute(builder: (_) => const AddProductScreen()),
                   ),
                 ),
-
-                SizedBox(
-                  width: cardWidth,
-                  child: overviewCard(
-                    title: 'Sales',
-                    value: '₹${totalSales.toStringAsFixed(0)}',
-                    subtitle: 'Delivered order value',
-                    icon: Icons.currency_rupee,
-                    highlighted: true,
+                _actionCard(
+                  icon: Icons.balance_rounded,
+                  title: 'Fair Pricing',
+                  subtitle: 'Living wages + materials',
+                  color: _gold,
+                  onTap: () => Navigator.of(context).push(
+                    MaterialPageRoute(builder: (_) => const PricingScreen()),
                   ),
                 ),
-
-                SizedBox(
-                  width: cardWidth,
-                  child: overviewCard(
-                    title: 'Pending',
-                    value: pendingOrders.toString(),
-                    subtitle: 'Orders in progress',
-                    icon: Icons.pending_actions,
+                _actionCard(
+                  icon: Icons.gavel_rounded,
+                  title: 'Live Auctions',
+                  subtitle: 'Real-time bidder room',
+                  color: const Color(0xFF7A3E65),
+                  onTap: () => Navigator.of(context).push(
+                    MaterialPageRoute(builder: (_) => const ArtisanAuctionsScreen()),
                   ),
                 ),
               ],
@@ -501,240 +437,190 @@ class _BusinessScreenState extends State<BusinessScreen> {
           },
         ),
       ],
-    );
+    ).animate().fadeIn(delay: 100.ms).slideY(begin: 0.05, end: 0);
   }
 
-  // ============================================================
-  // OVERVIEW CARD
-  // ============================================================
-
-  Widget overviewCard({
-    required String title,
-    required String value,
-    required String subtitle,
+  Widget _actionCard({
     required IconData icon,
-    bool highlighted = false,
+    required String title,
+    required String subtitle,
+    required Color color,
+    required VoidCallback onTap,
   }) {
-    final primary = Theme.of(context).colorScheme.primary;
-
-    return Container(
-      padding: const EdgeInsets.all(20),
-      decoration: BoxDecoration(
-        borderRadius: BorderRadius.circular(20),
-        color: highlighted
-            ? primary.withValues(alpha: 0.07)
-            : Theme.of(context).colorScheme.surface,
-        border: Border.all(
-          color: highlighted
-              ? primary.withValues(alpha: 0.30)
-              : Colors.grey.withValues(alpha: 0.20),
+    return InkWell(
+      onTap: onTap,
+      borderRadius: BorderRadius.circular(20),
+      child: Container(
+        padding: const EdgeInsets.all(16),
+        decoration: BoxDecoration(
+          color: _surface,
+          borderRadius: BorderRadius.circular(20),
+          border: Border.all(color: color.withValues(alpha: 0.20)),
+          boxShadow: [
+            BoxShadow(
+              color: color.withValues(alpha: 0.06),
+              blurRadius: 16,
+              offset: const Offset(0, 6),
+            ),
+          ],
+        ),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Container(
+              padding: const EdgeInsets.all(10),
+              decoration: BoxDecoration(
+                color: color.withValues(alpha: 0.12),
+                borderRadius: BorderRadius.circular(14),
+              ),
+              child: Icon(icon, color: color, size: 22),
+            ),
+            const Spacer(),
+            Text(
+              title,
+              style: const TextStyle(
+                color: _ink,
+                fontSize: 15,
+                fontWeight: FontWeight.w800,
+              ),
+            ),
+            const SizedBox(height: 3),
+            Text(
+              subtitle,
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+              style: TextStyle(color: _muted, fontSize: 11, fontWeight: FontWeight.w500),
+            ),
+          ],
         ),
       ),
-      child: Row(
-        children: [
-          Container(
-            height: 48,
-            width: 48,
-            decoration: BoxDecoration(
-              borderRadius: BorderRadius.circular(14),
-              color: primary.withValues(alpha: 0.10),
-            ),
-            child: Icon(icon, color: primary),
-          ),
-
-          const SizedBox(width: 14),
-
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  title,
-                  style: const TextStyle(color: Colors.grey, fontSize: 13),
-                ),
-
-                const SizedBox(height: 3),
-
-                Text(
-                  value,
-                  style: const TextStyle(
-                    fontSize: 23,
-                    fontWeight: FontWeight.bold,
-                  ),
-                ),
-
-                const SizedBox(height: 2),
-
-                Text(
-                  subtitle,
-                  style: const TextStyle(color: Colors.grey, fontSize: 12),
-                ),
-              ],
-            ),
-          ),
-        ],
-      ),
     );
   }
 
   // ============================================================
-  // BUSINESS HEALTH
+  // 3. FINANCIAL & IMPACT METRICS
   // ============================================================
-
-  Widget buildBusinessHealth() {
-    final primary = Theme.of(context).colorScheme.primary;
-
-    return Container(
-      padding: const EdgeInsets.all(20),
-      decoration: BoxDecoration(
-        borderRadius: BorderRadius.circular(20),
-        border: Border.all(color: Colors.grey.withValues(alpha: 0.20)),
-      ),
-      child: Row(
-        children: [
-          Container(
-            height: 52,
-            width: 52,
-            decoration: BoxDecoration(
-              shape: BoxShape.circle,
-              color: primary.withValues(alpha: 0.10),
-            ),
-            child: Icon(businessStatusIcon, color: primary),
-          ),
-
-          const SizedBox(width: 15),
-
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                const Text(
-                  'Business Status',
-                  style: TextStyle(color: Colors.grey, fontSize: 12),
-                ),
-
-                const SizedBox(height: 4),
-
-                Text(
-                  businessStatus,
-                  style: const TextStyle(
-                    fontSize: 17,
-                    fontWeight: FontWeight.bold,
-                  ),
-                ),
-              ],
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-
-  // ============================================================
-  // INSIGHTS
-  // ============================================================
-
-  Widget buildInsightsSection() {
+  Widget _buildFinancialAndImpactMetrics() {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         const Text(
-          'Business Insights',
-          style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+          'Atelier Impact & Financials',
+          style: TextStyle(
+            color: _ink,
+            fontSize: 19,
+            fontWeight: FontWeight.w900,
+            letterSpacing: -0.4,
+          ),
         ),
-
         const SizedBox(height: 14),
-
-        insightCard(
-          icon: Icons.trending_up,
-          title: 'Demand Forecast',
-          description: productCount == 0
-              ? 'Add products to start receiving demand insights.'
-              : 'Your marketplace products are ready for demand analysis.',
+        Row(
+          children: [
+            Expanded(
+              child: _metricBox(
+                title: 'Total Heritage Sales',
+                value: '₹${totalSales.toStringAsFixed(0)}',
+                subtitle: '100% Direct Revenue',
+                icon: Icons.currency_rupee_rounded,
+                accentColor: _terracotta,
+              ),
+            ),
+            const SizedBox(width: 14),
+            Expanded(
+              child: _metricBox(
+                title: 'Active Masterpieces',
+                value: productCount.toString(),
+                subtitle: 'In Online Catalog',
+                icon: Icons.palette_outlined,
+                accentColor: _forest,
+              ),
+            ),
+          ],
         ),
-
-        insightCard(
-          icon: Icons.inventory_2_outlined,
-          title: 'Inventory Alert',
-          description: productCount == 0
-              ? 'Your inventory is currently empty.'
-              : '$productCount product${productCount == 1 ? '' : 's'} available in your catalog.',
-        ),
-
-        insightCard(
-          icon: Icons.currency_rupee,
-          title: 'Pricing Insight',
-          description:
-              'Use the AI Pricing Assistant to calculate prices based on cost, quality and demand.',
-        ),
-
-        insightCard(
-          icon: Icons.groups_outlined,
-          title: 'B2B Opportunities',
-          description:
-              'Your published products can be presented to larger buyers through the marketplace.',
+        const SizedBox(height: 14),
+        Row(
+          children: [
+            Expanded(
+              child: _metricBox(
+                title: 'Patron Orders',
+                value: orderCount.toString(),
+                subtitle: '$pendingOrders in creation',
+                icon: Icons.handshake_outlined,
+                accentColor: _gold,
+              ),
+            ),
+            const SizedBox(width: 14),
+            Expanded(
+              child: _metricBox(
+                title: 'Living Wage Index',
+                value: '100%',
+                subtitle: 'Zero Middlemen Cut',
+                icon: Icons.favorite_rounded,
+                accentColor: const Color(0xFF2E7D32),
+              ),
+            ),
+          ],
         ),
       ],
-    );
+    ).animate().fadeIn(delay: 200.ms).slideY(begin: 0.05, end: 0);
   }
 
-  // ============================================================
-  // INSIGHT CARD
-  // ============================================================
-
-  Widget insightCard({
-    required IconData icon,
+  Widget _metricBox({
     required String title,
-    required String description,
+    required String value,
+    required String subtitle,
+    required IconData icon,
+    required Color accentColor,
   }) {
-    final primary = Theme.of(context).colorScheme.primary;
-
     return Container(
-      margin: const EdgeInsets.only(bottom: 12),
       padding: const EdgeInsets.all(18),
       decoration: BoxDecoration(
-        borderRadius: BorderRadius.circular(18),
-        border: Border.all(color: Colors.grey.withValues(alpha: 0.20)),
+        color: _surface,
+        borderRadius: BorderRadius.circular(22),
+        border: Border.all(color: const Color(0xFFE6DDD2)),
+        boxShadow: const [
+          BoxShadow(
+            color: Color(0x0A000000),
+            blurRadius: 14,
+            offset: Offset(0, 4),
+          ),
+        ],
       ),
-      child: Row(
+      child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Container(
-            height: 44,
-            width: 44,
-            decoration: BoxDecoration(
-              borderRadius: BorderRadius.circular(13),
-              color: primary.withValues(alpha: 0.09),
-            ),
-            child: Icon(icon, color: primary),
+          Row(
+            children: [
+              Container(
+                padding: const EdgeInsets.all(8),
+                decoration: BoxDecoration(
+                  color: accentColor.withValues(alpha: 0.12),
+                  borderRadius: BorderRadius.circular(10),
+                ),
+                child: Icon(icon, color: accentColor, size: 18),
+              ),
+              const Spacer(),
+              Text(
+                title,
+                style: const TextStyle(color: _muted, fontSize: 11, fontWeight: FontWeight.w600),
+              ),
+            ],
           ),
-
-          const SizedBox(width: 13),
-
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  title,
-                  style: const TextStyle(
-                    fontWeight: FontWeight.bold,
-                    fontSize: 15,
-                  ),
-                ),
-
-                const SizedBox(height: 5),
-
-                Text(
-                  description,
-                  style: const TextStyle(
-                    color: Colors.grey,
-                    fontSize: 13,
-                    height: 1.45,
-                  ),
-                ),
-              ],
+          const SizedBox(height: 14),
+          Text(
+            value,
+            style: TextStyle(
+              color: _ink,
+              fontSize: 24,
+              fontWeight: FontWeight.w900,
+              letterSpacing: -0.5,
             ),
+          ),
+          const SizedBox(height: 3),
+          Text(
+            subtitle,
+            style: TextStyle(color: accentColor, fontSize: 11, fontWeight: FontWeight.w700),
           ),
         ],
       ),
@@ -742,307 +628,338 @@ class _BusinessScreenState extends State<BusinessScreen> {
   }
 
   // ============================================================
-  // RECENT ORDERS
+  // 4. MASTERPIECES SHOWCASE (CATALOG)
   // ============================================================
-
-  Widget buildRecentOrders() {
+  Widget _buildMasterpiecesSection() {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Row(
           children: [
-            const Expanded(
-              child: Text(
-                'Recent Orders',
-                style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+            const Text(
+              'Your Active Masterpieces',
+              style: TextStyle(
+                color: _ink,
+                fontSize: 19,
+                fontWeight: FontWeight.w900,
+                letterSpacing: -0.4,
               ),
             ),
-
-            if (orderCount > 5)
-              Text(
-                'Latest 5',
-                style: TextStyle(
-                  color: Theme.of(context).colorScheme.primary,
-                  fontSize: 12,
-                ),
+            const Spacer(),
+            TextButton.icon(
+              onPressed: () => Navigator.of(context).push(
+                MaterialPageRoute(builder: (_) => const AddProductScreen()),
               ),
+              icon: const Icon(Icons.add, size: 17),
+              label: const Text('Add Craft'),
+            ),
           ],
         ),
-
-        const SizedBox(height: 14),
-
-        if (recentOrders.isEmpty)
-          emptyCard(
-            icon: Icons.shopping_bag_outlined,
-            title: 'No orders yet',
-            description: 'Orders from customers will appear here.',
+        const SizedBox(height: 12),
+        if (products.isEmpty)
+          Container(
+            padding: const EdgeInsets.all(28),
+            decoration: BoxDecoration(
+              color: _surface,
+              borderRadius: BorderRadius.circular(22),
+              border: Border.all(color: const Color(0xFFE6DDD2)),
+            ),
+            child: Center(
+              child: Column(
+                children: [
+                  Icon(Icons.brush_outlined, size: 44, color: _terracotta.withValues(alpha: 0.6)),
+                  const SizedBox(height: 12),
+                  const Text(
+                    'No crafts published yet',
+                    style: TextStyle(fontSize: 16, fontWeight: FontWeight.w800, color: _ink),
+                  ),
+                  const SizedBox(height: 6),
+                  const Text(
+                    'Use our AI Story Writer and Image Studio to publish your first handcrafted masterpiece.',
+                    textAlign: TextAlign.center,
+                    style: TextStyle(fontSize: 13, color: _muted),
+                  ),
+                  const SizedBox(height: 18),
+                  FilledButton.icon(
+                    onPressed: () => Navigator.of(context).push(
+                      MaterialPageRoute(builder: (_) => const AddProductScreen()),
+                    ),
+                    icon: const Icon(Icons.add),
+                    label: const Text('Publish First Craft'),
+                  ),
+                ],
+              ),
+            ),
           )
         else
-          ...recentOrders.map((order) => orderCard(order)),
+          SizedBox(
+            height: 220,
+            child: ListView.separated(
+              scrollDirection: Axis.horizontal,
+              physics: const BouncingScrollPhysics(),
+              itemCount: products.length,
+              separatorBuilder: (_, _) => const SizedBox(width: 14),
+              itemBuilder: (context, index) {
+                final p = products[index];
+                final name = p['name']?.toString() ?? 'Handcrafted Piece';
+                final category = p['category']?.toString() ?? 'Handicraft';
+                final price = _toDouble(p['price']);
+                final imgUrl = p['imageUrl']?.toString() ?? '';
+
+                return Container(
+                  width: 170,
+                  decoration: BoxDecoration(
+                    color: _surface,
+                    borderRadius: BorderRadius.circular(20),
+                    border: Border.all(color: const Color(0xFFE6DDD2)),
+                  ),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      ClipRRect(
+                        borderRadius: const BorderRadius.vertical(top: Radius.circular(20)),
+                        child: SizedBox(
+                          height: 110,
+                          width: double.infinity,
+                          child: imgUrl.isNotEmpty
+                              ? Image.network(imgUrl, fit: BoxFit.cover)
+                              : Container(
+                                  color: _forest.withValues(alpha: 0.1),
+                                  child: const Icon(Icons.palette_outlined, color: _forest, size: 36),
+                                ),
+                        ),
+                      ),
+                      Padding(
+                        padding: const EdgeInsets.all(12),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              name,
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
+                              style: const TextStyle(fontWeight: FontWeight.w800, fontSize: 14, color: _ink),
+                            ),
+                            const SizedBox(height: 3),
+                            Text(
+                              category,
+                              style: const TextStyle(color: _muted, fontSize: 11),
+                            ),
+                            const SizedBox(height: 8),
+                            Text(
+                              '₹${price.toStringAsFixed(0)}',
+                              style: const TextStyle(fontWeight: FontWeight.w900, color: _terracotta, fontSize: 15),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ],
+                  ),
+                ).animate().fadeIn(delay: (50 * index).ms).slideX(begin: 0.1);
+              },
+            ),
+          ),
       ],
-    );
+    ).animate().fadeIn(delay: 260.ms).slideY(begin: 0.05, end: 0);
   }
 
   // ============================================================
-  // ORDER CARD
+  // 5. PATRON ORDERS PIPELINE
   // ============================================================
-
-  Widget orderCard(Map<String, dynamic> order) {
-    final status = order['status']?.toString() ?? 'pending';
-
-    final total = _toDouble(order['total']);
-
-    final primary = Theme.of(context).colorScheme.primary;
-
-    return Container(
-      margin: const EdgeInsets.only(bottom: 12),
-      padding: const EdgeInsets.all(17),
-      decoration: BoxDecoration(
-        borderRadius: BorderRadius.circular(18),
-        border: Border.all(color: Colors.grey.withValues(alpha: 0.20)),
-      ),
-      child: Row(
-        children: [
-          Container(
-            height: 45,
-            width: 45,
-            decoration: BoxDecoration(
-              borderRadius: BorderRadius.circular(13),
-              color: primary.withValues(alpha: 0.09),
-            ),
-            child: Icon(Icons.receipt_long_outlined, color: primary),
-          ),
-
-          const SizedBox(width: 13),
-
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  'Order #${order['orderId'] ?? order['id']}',
-                  maxLines: 1,
-                  overflow: TextOverflow.ellipsis,
-                  style: const TextStyle(fontWeight: FontWeight.bold),
-                ),
-
-                const SizedBox(height: 5),
-
-                Text(
-                  '₹${total.toStringAsFixed(0)}',
-                  style: const TextStyle(fontSize: 14),
-                ),
-              ],
-            ),
-          ),
-
-          statusBadge(status),
-        ],
-      ),
-    );
-  }
-
-  // ============================================================
-  // STATUS BADGE
-  // ============================================================
-
-  Widget statusBadge(String status) {
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
-      decoration: BoxDecoration(
-        borderRadius: BorderRadius.circular(20),
-        color: Theme.of(context).colorScheme.primary.withValues(alpha: 0.08),
-      ),
-      child: Text(
-        status.toUpperCase(),
-        style: TextStyle(
-          color: Theme.of(context).colorScheme.primary,
-          fontSize: 10,
-          fontWeight: FontWeight.bold,
-        ),
-      ),
-    );
-  }
-
-  // ============================================================
-  // INVENTORY
-  // ============================================================
-
-  Widget buildInventorySection() {
+  Widget _buildPatronOrdersSection() {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        const Text(
-          'Your Catalog',
-          style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
-        ),
-
-        const SizedBox(height: 14),
-
-        if (products.isEmpty)
-          emptyCard(
-            icon: Icons.inventory_2_outlined,
-            title: 'No products',
-            description:
-                'Publish your first product to build your digital catalog.',
-          )
-        else
-          ...products.take(5).map((product) => productCard(product)),
-      ],
-    );
-  }
-
-  // ============================================================
-  // PRODUCT CARD
-  // ============================================================
-
-  Widget productCard(Map<String, dynamic> product) {
-    final name = product['name']?.toString() ?? 'Unnamed Product';
-
-    final category = product['category']?.toString() ?? 'Handicraft';
-
-    final price = _toDouble(product['price']);
-
-    final primary = Theme.of(context).colorScheme.primary;
-
-    return Container(
-      margin: const EdgeInsets.only(bottom: 12),
-      padding: const EdgeInsets.all(16),
-      decoration: BoxDecoration(
-        borderRadius: BorderRadius.circular(18),
-        border: Border.all(color: Colors.grey.withValues(alpha: 0.20)),
-      ),
-      child: Row(
-        children: [
-          Container(
-            height: 46,
-            width: 46,
-            decoration: BoxDecoration(
-              borderRadius: BorderRadius.circular(13),
-              color: primary.withValues(alpha: 0.09),
+        Row(
+          children: [
+            const Text(
+              'Recent Patron Commissions',
+              style: TextStyle(
+                color: _ink,
+                fontSize: 19,
+                fontWeight: FontWeight.w900,
+                letterSpacing: -0.4,
+              ),
             ),
-            child: Icon(Icons.inventory_2_outlined, color: primary),
-          ),
-
-          const SizedBox(width: 13),
-
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
+            const Spacer(),
+            TextButton(
+              onPressed: () => Navigator.of(context).push(
+                MaterialPageRoute(builder: (_) => const ArtisanOrdersScreen()),
+              ),
+              child: const Text('View All Orders'),
+            ),
+          ],
+        ),
+        const SizedBox(height: 12),
+        if (recentOrders.isEmpty)
+          Container(
+            padding: const EdgeInsets.all(22),
+            decoration: BoxDecoration(
+              color: _surface,
+              borderRadius: BorderRadius.circular(20),
+              border: Border.all(color: const Color(0xFFE6DDD2)),
+            ),
+            child: Row(
               children: [
-                Text(
-                  name,
-                  maxLines: 1,
-                  overflow: TextOverflow.ellipsis,
-                  style: const TextStyle(
-                    fontWeight: FontWeight.bold,
-                    fontSize: 15,
+                Icon(Icons.inventory_2_outlined, color: _muted, size: 30),
+                const SizedBox(width: 14),
+                const Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        'Awaiting new patron orders',
+                        style: TextStyle(fontWeight: FontWeight.w700, color: _ink),
+                      ),
+                      SizedBox(height: 3),
+                      Text(
+                        'When customers purchase your crafts, their orders and shipping details will appear here.',
+                        style: TextStyle(fontSize: 12, color: _muted),
+                      ),
+                    ],
                   ),
-                ),
-
-                const SizedBox(height: 4),
-
-                Text(
-                  category,
-                  style: const TextStyle(color: Colors.grey, fontSize: 12),
                 ),
               ],
             ),
-          ),
+          )
+        else
+          ...recentOrders.map((order) {
+            final total = _toDouble(order['total']);
+            final status = order['status']?.toString() ?? 'pending';
+            final orderId = order['orderId'] ?? order['id'] ?? 'HeriTrace Order';
 
-          Text(
-            '₹${price.toStringAsFixed(0)}',
-            style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
-          ),
-        ],
-      ),
-    );
+            return Container(
+              margin: const EdgeInsets.only(bottom: 12),
+              padding: const EdgeInsets.all(16),
+              decoration: BoxDecoration(
+                color: _surface,
+                borderRadius: BorderRadius.circular(20),
+                border: Border.all(color: const Color(0xFFE6DDD2)),
+              ),
+              child: Row(
+                children: [
+                  Container(
+                    padding: const EdgeInsets.all(10),
+                    decoration: BoxDecoration(
+                      color: _forest.withValues(alpha: 0.1),
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                    child: const Icon(Icons.shopping_bag_outlined, color: _forest, size: 20),
+                  ),
+                  const SizedBox(width: 14),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          'Order #$orderId',
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                          style: const TextStyle(fontWeight: FontWeight.w800, fontSize: 14, color: _ink),
+                        ),
+                        const SizedBox(height: 4),
+                        Text(
+                          '₹${total.toStringAsFixed(0)} · Direct Payment',
+                          style: const TextStyle(fontWeight: FontWeight.w700, color: _terracotta, fontSize: 13),
+                        ),
+                      ],
+                    ),
+                  ),
+                  _buildArtisanStatusChip(status),
+                ],
+              ),
+            );
+          }),
+      ],
+    ).animate().fadeIn(delay: 320.ms).slideY(begin: 0.05, end: 0);
   }
 
-  // ============================================================
-  // EMPTY CARD
-  // ============================================================
+  Widget _buildArtisanStatusChip(String status) {
+    Color bg = _terracotta.withValues(alpha: 0.12);
+    Color fg = _terracotta;
+    String label = 'Loom Setup';
 
-  Widget emptyCard({
-    required IconData icon,
-    required String title,
-    required String description,
-  }) {
-    return Container(
-      width: double.infinity,
-      padding: const EdgeInsets.all(24),
-      decoration: BoxDecoration(
-        borderRadius: BorderRadius.circular(18),
-        border: Border.all(color: Colors.grey.withValues(alpha: 0.20)),
-      ),
-      child: Column(
-        children: [
-          Icon(icon, size: 40, color: Colors.grey),
-
-          const SizedBox(height: 10),
-
-          Text(
-            title,
-            style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
-          ),
-
-          const SizedBox(height: 5),
-
-          Text(
-            description,
-            textAlign: TextAlign.center,
-            style: const TextStyle(color: Colors.grey, fontSize: 13),
-          ),
-        ],
-      ),
-    );
-  }
-
-  // ============================================================
-  // BUSINESS TIP
-  // ============================================================
-
-  Widget buildBusinessTip() {
-    final primary = Theme.of(context).colorScheme.primary;
+    switch (status.toLowerCase()) {
+      case 'processing':
+        bg = _gold.withValues(alpha: 0.18);
+        fg = const Color(0xFF946200);
+        label = 'Crafting';
+        break;
+      case 'shipped':
+        bg = const Color(0xFF1976D2).withValues(alpha: 0.12);
+        fg = const Color(0xFF1976D2);
+        label = 'Dispatched';
+        break;
+      case 'delivered':
+        bg = const Color(0xFF2E7D32).withValues(alpha: 0.12);
+        fg = const Color(0xFF2E7D32);
+        label = 'Delivered';
+        break;
+      default:
+        label = 'Pending';
+    }
 
     return Container(
-      padding: const EdgeInsets.all(20),
+      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
       decoration: BoxDecoration(
+        color: bg,
         borderRadius: BorderRadius.circular(20),
-        color: primary.withValues(alpha: 0.05),
-        border: Border.all(color: primary.withValues(alpha: 0.15)),
+      ),
+      child: Text(
+        label,
+        style: TextStyle(color: fg, fontWeight: FontWeight.w800, fontSize: 11),
+      ),
+    );
+  }
+
+  // ============================================================
+  // 6. HERITAGE ADVISORY & TIPS
+  // ============================================================
+  Widget _buildHeritageAdvisoryCard() {
+    return Container(
+      padding: const EdgeInsets.all(22),
+      decoration: BoxDecoration(
+        borderRadius: BorderRadius.circular(24),
+        gradient: LinearGradient(
+          colors: [
+            _gold.withValues(alpha: 0.18),
+            _gold.withValues(alpha: 0.05),
+          ],
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+        ),
+        border: Border.all(color: _gold.withValues(alpha: 0.35)),
       ),
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Icon(Icons.lightbulb_outline, color: primary),
-
-          const SizedBox(width: 12),
-
-          const Expanded(
+          Container(
+            padding: const EdgeInsets.all(10),
+            decoration: BoxDecoration(
+              color: _gold.withValues(alpha: 0.2),
+              shape: BoxShape.circle,
+            ),
+            child: const Icon(Icons.lightbulb_outline_rounded, color: Color(0xFF8C5C00), size: 22),
+          ),
+          const SizedBox(width: 14),
+          Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text(
-                  'AI Business Tip',
-                  style: TextStyle(fontWeight: FontWeight.bold, fontSize: 15),
+                const Text(
+                  'Heritage Market Advisory',
+                  style: TextStyle(fontWeight: FontWeight.w800, fontSize: 15, color: _ink),
                 ),
-
-                SizedBox(height: 6),
-
-                Text(
-                  'Keep your product catalog updated, use AI pricing recommendations and respond quickly to customer orders to improve your digital business presence.',
-                  style: TextStyle(
-                    color: Colors.grey,
-                    fontSize: 13,
-                    height: 1.5,
-                  ),
+                const SizedBox(height: 6),
+                const Text(
+                  'Patrons pay 40% higher for crafts with authentic provenance stories. Use the AI Story Writer to document the traditional motifs and heritage behind your creations.',
+                  style: TextStyle(fontSize: 13, height: 1.5, color: _muted),
                 ),
               ],
             ),
           ),
         ],
       ),
-    );
+    ).animate().fadeIn(delay: 380.ms).scale(begin: const Offset(0.97, 0.97));
   }
 }

@@ -110,63 +110,39 @@ class _HomeScreenState extends State<HomeScreen> {
 
         onDestinationSelected: _onNavigationChanged,
 
-        indicatorColor: const Color(0xFFDDF1EA),
+        indicatorColor: const Color(0xFFF3E2D1),
 
         labelBehavior: NavigationDestinationLabelBehavior.alwaysShow,
 
         destinations: const [
-          // ====================================================
-          // HOME
-          // ====================================================
-
           NavigationDestination(
-            icon: Icon(Icons.dashboard_outlined),
-            selectedIcon: Icon(Icons.dashboard),
-            label: 'Home',
+            icon: Icon(Icons.handyman_outlined),
+            selectedIcon: Icon(Icons.handyman, color: Color(0xFFA24B2A)),
+            label: 'Atelier',
           ),
-
-          // ====================================================
-          // PRODUCTS
-          // ====================================================
           NavigationDestination(
-            icon: Icon(Icons.inventory_2_outlined),
-            selectedIcon: Icon(Icons.inventory_2),
-            label: 'Products',
+            icon: Icon(Icons.palette_outlined),
+            selectedIcon: Icon(Icons.palette, color: Color(0xFFA24B2A)),
+            label: 'Crafts',
           ),
-
-          // ====================================================
-          // ADD
-          // ====================================================
           NavigationDestination(
             icon: Icon(Icons.add_circle_outline),
-            selectedIcon: Icon(Icons.add_circle),
-            label: 'Add',
+            selectedIcon: Icon(Icons.add_circle, color: Color(0xFFA24B2A)),
+            label: 'Create',
           ),
-
-          // ====================================================
-          // PRICING
-          // ====================================================
           NavigationDestination(
-            icon: Icon(Icons.auto_graph_outlined),
-            selectedIcon: Icon(Icons.auto_graph),
-            label: 'Pricing',
+            icon: Icon(Icons.balance_outlined),
+            selectedIcon: Icon(Icons.balance, color: Color(0xFFA24B2A)),
+            label: 'Fair Price',
           ),
-
-          // ====================================================
-          // MARKET
-          // ====================================================
           NavigationDestination(
             icon: Icon(Icons.storefront_outlined),
-            selectedIcon: Icon(Icons.storefront),
+            selectedIcon: Icon(Icons.storefront, color: Color(0xFFA24B2A)),
             label: 'Market',
           ),
-
-          // ====================================================
-          // AI MANAGER
-          // ====================================================
           NavigationDestination(
             icon: Icon(Icons.person_outline_rounded),
-            selectedIcon: Icon(Icons.person_rounded),
+            selectedIcon: Icon(Icons.person_rounded, color: Color(0xFFA24B2A)),
             label: 'Profile',
           ),
         ],
