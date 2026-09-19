@@ -212,6 +212,16 @@ class _BusinessScreenState extends State<BusinessScreen> {
         ),
         actions: [
           IconButton(
+            tooltip: 'Artisan Community',
+            onPressed: () => Navigator.pushNamed(context, '/artisan-community'),
+            icon: const Icon(Icons.forum_rounded, color: _forest),
+          ),
+          IconButton(
+            tooltip: 'Heritage News Gazette',
+            onPressed: () => Navigator.pushNamed(context, '/heritage-news'),
+            icon: const Icon(Icons.newspaper_rounded, color: _terracotta),
+          ),
+          IconButton(
             tooltip: 'Live Auctions',
             onPressed: () => Navigator.of(context).push(
               MaterialPageRoute(builder: (_) => const ArtisanAuctionsScreen()),
@@ -649,6 +659,21 @@ class _BusinessScreenState extends State<BusinessScreen> {
                   color: const Color(0xFF5E35B1),
                   onTap: () =>
                       Navigator.pushNamed(context, '/heritage-features'),
+                ),
+                _actionCard(
+                  icon: Icons.forum_rounded,
+                  title: 'Artisan Guild',
+                  subtitle: 'Live chat & peer sourcing',
+                  color: const Color(0xFF0D47A1),
+                  onTap: () =>
+                      Navigator.pushNamed(context, '/artisan-community'),
+                ),
+                _actionCard(
+                  icon: Icons.newspaper_rounded,
+                  title: 'Heritage Gazette',
+                  subtitle: 'GI grants & expo alerts',
+                  color: const Color(0xFFC2185B),
+                  onTap: () => Navigator.pushNamed(context, '/heritage-news'),
                 ),
               ],
             );

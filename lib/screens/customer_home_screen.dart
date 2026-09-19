@@ -81,6 +81,12 @@ class _CustomerHomeScreenState extends State<CustomerHomeScreen>
       'icon': Icons.verified_outlined,
       'isBrand': false,
     },
+    {
+      'title': 'Culture Gazette',
+      'sub': 'Daily News',
+      'icon': Icons.newspaper_rounded,
+      'isBrand': false,
+    },
   ];
 
   final List<Map<String, dynamic>> _categoryTabs = [
@@ -262,6 +268,14 @@ class _CustomerHomeScreenState extends State<CustomerHomeScreen>
                     .slideY(begin: 0.05, end: 0),
               ),
 
+              // Sliding Sponsored Product Advertisements (Flipkart-style)
+              SliverToBoxAdapter(
+                child: _buildSlidingProductAdvertisementsRail()
+                    .animate(delay: 180.ms)
+                    .fadeIn(duration: 450.ms)
+                    .slideY(begin: 0.05, end: 0),
+              ),
+
               // Feed Section Header
               SliverToBoxAdapter(
                 child: Padding(
@@ -408,6 +422,8 @@ class _CustomerHomeScreenState extends State<CustomerHomeScreen>
                   _selectedCategory = 'Decor';
                 } else if (_selectedTopService == 'Direct GI') {
                   _selectedCategory = 'Textiles';
+                } else if (_selectedTopService == 'Culture Gazette') {
+                  Navigator.pushNamed(context, '/heritage-news');
                 }
               });
             },
@@ -1301,6 +1317,236 @@ class _CustomerHomeScreenState extends State<CustomerHomeScreen>
                               ),
                             ),
                           ],
+                        ),
+                      ),
+                    ],
+                  ),
+                );
+              },
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  // ============================================================
+  // SLIDING SPONSORED PRODUCT ADVERTISEMENTS (FLIPKART-STYLE)
+  // ============================================================
+
+  Widget _buildSlidingProductAdvertisementsRail() {
+    final List<Map<String, dynamic>> sponsoredAds = [
+      {
+        'title': 'Kashmiri Handloom Pashmina',
+        'badge': 'SPONSORED • GI ASSURED',
+        'deal': 'FLAT 50% OFF',
+        'price': '₹4,999',
+        'mrp': '₹9,999',
+        'sub': 'Pure Himalayan Changthangi Weave',
+        'imageUrl':
+            'https://images.unsplash.com/photo-1607604276583-eef5d076aa5f?auto=format&fit=crop&w=600&q=80',
+        'bgGradient': const [Color(0xFF2C1307), Color(0xFF632810)],
+      },
+      {
+        'title': 'Dhokra Lost-Wax Bell Metal',
+        'badge': 'TRIBAL CRAFT • AD',
+        'deal': 'FESTIVE SPECIAL',
+        'price': '₹1,899',
+        'mrp': '₹3,499',
+        'sub': '4,000-Yr Bronze Casting',
+        'imageUrl':
+            'https://images.unsplash.com/photo-1616486338812-3dadae4b4ace?auto=format&fit=crop&w=600&q=80',
+        'bgGradient': const [Color(0xFF0F261E), Color(0xFF1B4D3C)],
+      },
+      {
+        'title': 'Varanasi Pure Katan Silk',
+        'badge': 'EXCLUSIVE • TOP SELLER',
+        'deal': '45% OFF',
+        'price': '₹3,299',
+        'mrp': '₹6,599',
+        'sub': 'Royal Gold Zari Brocade',
+        'imageUrl':
+            'https://utkalikaodisha.com/wp-content/uploads/2023/01/TRI3D__Smb_3__silk_set172_srijla_front__2023-1-4-13-27-43__1200X1200_11zon.jpg',
+        'bgGradient': const [Color(0xFF33092E), Color(0xFF6B1D61)],
+      },
+      {
+        'title': 'Jaipur Cobalt Blue Pottery',
+        'badge': 'HAND-PAINTED • AD',
+        'deal': 'UNDER ₹799',
+        'price': '₹649',
+        'mrp': '₹1,499',
+        'sub': 'Quartz & Fullers Earth Glaze',
+        'imageUrl':
+            'https://images.unsplash.com/photo-1578749556568-bc2c40e68b61?auto=format&fit=crop&w=600&q=80',
+        'bgGradient': const [Color(0xFF071F36), Color(0xFF124B82)],
+      },
+    ];
+
+    return Container(
+      margin: const EdgeInsets.fromLTRB(12, 10, 12, 4),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              Container(
+                padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                decoration: BoxDecoration(
+                  color: const Color(0xFFFFE500),
+                  borderRadius: BorderRadius.circular(4),
+                ),
+                child: const Text(
+                  'AD',
+                  style: TextStyle(
+                    fontSize: 9,
+                    fontWeight: FontWeight.w900,
+                    color: Color(0xFF1B1464),
+                  ),
+                ),
+              ),
+              const SizedBox(width: 8),
+              const Text(
+                'Sponsored Craft Masterpieces',
+                style: TextStyle(
+                  fontSize: 15,
+                  fontWeight: FontWeight.w900,
+                  color: _primaryText,
+                ),
+              ),
+              const Spacer(),
+              InkWell(
+                onTap: () => Navigator.pushNamed(context, '/heritage-news'),
+                child: const Row(
+                  children: [
+                    Icon(
+                      Icons.newspaper_rounded,
+                      size: 14,
+                      color: Color(0xFF2874F0),
+                    ),
+                    SizedBox(width: 4),
+                    Text(
+                      'Craft Gazette',
+                      style: TextStyle(
+                        fontSize: 12,
+                        fontWeight: FontWeight.w800,
+                        color: Color(0xFF2874F0),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 10),
+          SizedBox(
+            height: 160,
+            child: ListView.separated(
+              scrollDirection: Axis.horizontal,
+              itemCount: sponsoredAds.length,
+              separatorBuilder: (_, _) => const SizedBox(width: 10),
+              itemBuilder: (context, index) {
+                final ad = sponsoredAds[index];
+                return Container(
+                  width: 280,
+                  decoration: BoxDecoration(
+                    borderRadius: BorderRadius.circular(16),
+                    gradient: LinearGradient(
+                      colors: ad['bgGradient'] as List<Color>,
+                      begin: Alignment.topLeft,
+                      end: Alignment.bottomRight,
+                    ),
+                    boxShadow: [
+                      BoxShadow(
+                        color: Colors.black.withValues(alpha: 0.12),
+                        blurRadius: 8,
+                        offset: const Offset(0, 3),
+                      ),
+                    ],
+                  ),
+                  clipBehavior: Clip.antiAlias,
+                  child: Row(
+                    children: [
+                      Expanded(
+                        flex: 6,
+                        child: Padding(
+                          padding: const EdgeInsets.fromLTRB(14, 12, 8, 12),
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              Container(
+                                padding: const EdgeInsets.symmetric(
+                                  horizontal: 6,
+                                  vertical: 2,
+                                ),
+                                decoration: BoxDecoration(
+                                  color: Colors.white.withValues(alpha: 0.2),
+                                  borderRadius: BorderRadius.circular(4),
+                                ),
+                                child: Text(
+                                  ad['badge'] as String,
+                                  style: const TextStyle(
+                                    color: Colors.white,
+                                    fontSize: 8,
+                                    fontWeight: FontWeight.w800,
+                                  ),
+                                ),
+                              ),
+                              const SizedBox(height: 6),
+                              Text(
+                                ad['title'] as String,
+                                maxLines: 1,
+                                overflow: TextOverflow.ellipsis,
+                                style: const TextStyle(
+                                  color: Colors.white,
+                                  fontSize: 14,
+                                  fontWeight: FontWeight.w900,
+                                ),
+                              ),
+                              const SizedBox(height: 2),
+                              Text(
+                                ad['sub'] as String,
+                                maxLines: 1,
+                                overflow: TextOverflow.ellipsis,
+                                style: const TextStyle(
+                                  color: Colors.white70,
+                                  fontSize: 10,
+                                ),
+                              ),
+                              const SizedBox(height: 8),
+                              Row(
+                                children: [
+                                  Text(
+                                    ad['price'] as String,
+                                    style: const TextStyle(
+                                      color: Color(0xFFFFE500),
+                                      fontSize: 15,
+                                      fontWeight: FontWeight.w900,
+                                    ),
+                                  ),
+                                  const SizedBox(width: 5),
+                                  Text(
+                                    ad['mrp'] as String,
+                                    style: const TextStyle(
+                                      color: Colors.white60,
+                                      fontSize: 10,
+                                      decoration: TextDecoration.lineThrough,
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ],
+                          ),
+                        ),
+                      ),
+                      Expanded(
+                        flex: 4,
+                        child: Image.network(
+                          ad['imageUrl'] as String,
+                          height: double.infinity,
+                          fit: BoxFit.cover,
+                          errorBuilder: (_, _, _) =>
+                              Container(color: Colors.black26),
                         ),
                       ),
                     ],
