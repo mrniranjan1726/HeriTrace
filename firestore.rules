@@ -52,6 +52,11 @@ service cloud.firestore {
       allow read, write: if isSignedIn();
     }
 
+    // Collection-group reads used by artisan business order analytics.
+    match /{path=**}/orders/{orderId} {
+      allow read, write: if isSignedIn();
+    }
+
     match /auctions/{auctionId} {
       allow read: if isSignedIn();
       allow create: if isSignedIn()
