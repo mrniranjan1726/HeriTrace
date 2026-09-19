@@ -42,6 +42,7 @@ class _BusinessScreenState extends State<BusinessScreen> {
   List<Map<String, dynamic>> recentOrders = [];
   String? orderDataWarning;
   String artisanName = 'Master Artisan';
+  int _selectedCategoryIndex = 0;
 
   @override
   void initState() {
@@ -242,24 +243,316 @@ class _BusinessScreenState extends State<BusinessScreen> {
               color: _terracotta,
               child: ListView(
                 physics: const BouncingScrollPhysics(),
-                padding: const EdgeInsets.fromLTRB(20, 10, 20, 35),
+                padding: const EdgeInsets.fromLTRB(18, 10, 18, 35),
                 children: [
                   _buildAtelierHeroBanner(),
-                  const SizedBox(height: 20),
-                  _buildLiveAuctionsSpotlightCard(),
-                  const SizedBox(height: 24),
-                  _buildStudioQuickActions(),
-                  const SizedBox(height: 28),
-                  _buildFinancialAndImpactMetrics(),
-                  const SizedBox(height: 28),
-                  _buildMasterpiecesSection(),
-                  const SizedBox(height: 28),
-                  _buildPatronOrdersSection(),
-                  const SizedBox(height: 28),
-                  _buildHeritageAdvisoryCard(),
+                  const SizedBox(height: 18),
+                  _buildCategorySegmentBar(),
+                  const SizedBox(height: 18),
+                  _buildCurrentSegmentContent(),
                 ],
               ),
             ),
+    );
+  }
+
+  // ============================================================
+  // CATEGORY SEGMENTED BAR (CLICKABLE INTERACTIVE BAR)
+  // ============================================================
+  Widget _buildCategorySegmentBar() {
+    final segments = [
+      {'label': 'Studio Tools', 'icon': Icons.auto_fix_high_rounded},
+      {'label': 'Live Auctions', 'icon': Icons.gavel_rounded},
+      {'label': 'Guild & Gazette', 'icon': Icons.forum_rounded},
+      {'label': 'Sales & Orders', 'icon': Icons.insights_rounded},
+    ];
+
+    return SizedBox(
+      height: 44,
+      child: ListView.separated(
+        scrollDirection: Axis.horizontal,
+        physics: const BouncingScrollPhysics(),
+        itemCount: segments.length,
+        separatorBuilder: (_, _) => const SizedBox(width: 8),
+        itemBuilder: (context, index) {
+          final isSelected = _selectedCategoryIndex == index;
+          final seg = segments[index];
+
+          return InkWell(
+            onTap: () {
+              setState(() {
+                _selectedCategoryIndex = index;
+              });
+            },
+            borderRadius: BorderRadius.circular(20),
+            child: AnimatedContainer(
+              duration: const Duration(milliseconds: 200),
+              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+              decoration: BoxDecoration(
+                color: isSelected ? _terracotta : _surface,
+                borderRadius: BorderRadius.circular(20),
+                border: Border.all(
+                  color: isSelected
+                      ? _terracotta
+                      : const Color(0xFFE2D8CC),
+                  width: 1.2,
+                ),
+                boxShadow: isSelected
+                    ? [
+                        BoxShadow(
+                          color: _terracotta.withValues(alpha: 0.28),
+                          blurRadius: 10,
+                          offset: const Offset(0, 4),
+                        ),
+                      ]
+                    : [
+                        BoxShadow(
+                          color: Colors.black.withValues(alpha: 0.03),
+                          blurRadius: 6,
+                          offset: const Offset(0, 2),
+                        ),
+                      ],
+              ),
+              child: Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Icon(
+                    seg['icon'] as IconData,
+                    size: 17,
+                    color: isSelected ? Colors.white : _terracotta,
+                  ),
+                  const SizedBox(width: 7),
+                  Text(
+                    seg['label'] as String,
+                    style: TextStyle(
+                      color: isSelected ? Colors.white : _ink,
+                      fontWeight: isSelected ? FontWeight.w900 : FontWeight.w700,
+                      fontSize: 12.5,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          );
+        },
+      ),
+    );
+  }
+
+  // ============================================================
+  // DYNAMIC CONTENT RENDERER BASED ON SELECTED BAR ITEM
+  // ============================================================
+  Widget _buildCurrentSegmentContent() {
+    switch (_selectedCategoryIndex) {
+      case 0:
+        return Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            _buildStudioQuickActions(),
+            const SizedBox(height: 22),
+            _buildHeritageAdvisoryCard(),
+          ],
+        ).animate().fadeIn(duration: 250.ms);
+      case 1:
+        return Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            _buildLiveAuctionsSpotlightCard(),
+            const SizedBox(height: 22),
+            _buildHeritageAdvisoryCard(),
+          ],
+        ).animate().fadeIn(duration: 250.ms);
+      case 2:
+        return Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            _buildCommunityAndGazetteSection(),
+            const SizedBox(height: 22),
+            _buildHeritageAdvisoryCard(),
+          ],
+        ).animate().fadeIn(duration: 250.ms);
+      case 3:
+      default:
+        return Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            _buildFinancialAndImpactMetrics(),
+            const SizedBox(height: 24),
+            _buildMasterpiecesSection(),
+            const SizedBox(height: 24),
+            _buildPatronOrdersSection(),
+          ],
+        ).animate().fadeIn(duration: 250.ms);
+    }
+  }
+
+  // ============================================================
+  // GUILD & GAZETTE SECTION (WHEN SELECTED IN BAR)
+  // ============================================================
+  Widget _buildCommunityAndGazetteSection() {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Container(
+          width: double.infinity,
+          padding: const EdgeInsets.all(22),
+          decoration: BoxDecoration(
+            color: _surface,
+            borderRadius: BorderRadius.circular(24),
+            border: Border.all(color: const Color(0xFFE6DDD2)),
+            boxShadow: const [
+              BoxShadow(
+                color: Color(0x0A000000),
+                blurRadius: 16,
+                offset: Offset(0, 4),
+              ),
+            ],
+          ),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Row(
+                children: [
+                  Container(
+                    padding: const EdgeInsets.all(12),
+                    decoration: BoxDecoration(
+                      color: const Color(0xFF0D47A1).withValues(alpha: 0.12),
+                      borderRadius: BorderRadius.circular(16),
+                    ),
+                    child: const Icon(
+                      Icons.forum_rounded,
+                      color: Color(0xFF0D47A1),
+                      size: 26,
+                    ),
+                  ),
+                  const SizedBox(width: 14),
+                  const Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          'Artisan Guild Community',
+                          style: TextStyle(
+                            fontSize: 17,
+                            fontWeight: FontWeight.w900,
+                            color: _ink,
+                          ),
+                        ),
+                        SizedBox(height: 3),
+                        Text(
+                          'Live peer chat, raw material sourcing & collective pricing',
+                          style: TextStyle(
+                            fontSize: 12,
+                            color: _muted,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 16),
+              ElevatedButton.icon(
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: const Color(0xFF0D47A1),
+                  foregroundColor: Colors.white,
+                  minimumSize: const Size(double.infinity, 46),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(14),
+                  ),
+                ),
+                onPressed: () =>
+                    Navigator.pushNamed(context, '/artisan-community'),
+                icon: const Icon(Icons.chat_bubble_outline_rounded, size: 18),
+                label: const Text(
+                  'Open Guild Peer Chat',
+                  style: TextStyle(fontWeight: FontWeight.w800, fontSize: 13),
+                ),
+              ),
+            ],
+          ),
+        ),
+        const SizedBox(height: 16),
+        Container(
+          width: double.infinity,
+          padding: const EdgeInsets.all(22),
+          decoration: BoxDecoration(
+            color: _surface,
+            borderRadius: BorderRadius.circular(24),
+            border: Border.all(color: const Color(0xFFE6DDD2)),
+            boxShadow: const [
+              BoxShadow(
+                color: Color(0x0A000000),
+                blurRadius: 16,
+                offset: Offset(0, 4),
+              ),
+            ],
+          ),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Row(
+                children: [
+                  Container(
+                    padding: const EdgeInsets.all(12),
+                    decoration: BoxDecoration(
+                      color: const Color(0xFFC2185B).withValues(alpha: 0.12),
+                      borderRadius: BorderRadius.circular(16),
+                    ),
+                    child: const Icon(
+                      Icons.newspaper_rounded,
+                      color: Color(0xFFC2185B),
+                      size: 26,
+                    ),
+                  ),
+                  const SizedBox(width: 14),
+                  const Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          'Heritage News Gazette',
+                          style: TextStyle(
+                            fontSize: 17,
+                            fontWeight: FontWeight.w900,
+                            color: _ink,
+                          ),
+                        ),
+                        SizedBox(height: 3),
+                        Text(
+                          'GI grants, government policies, expo alerts & craft trends',
+                          style: TextStyle(
+                            fontSize: 12,
+                            color: _muted,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 16),
+              ElevatedButton.icon(
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: const Color(0xFFC2185B),
+                  foregroundColor: Colors.white,
+                  minimumSize: const Size(double.infinity, 46),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(14),
+                  ),
+                ),
+                onPressed: () =>
+                    Navigator.pushNamed(context, '/heritage-news'),
+                icon: const Icon(Icons.menu_book_rounded, size: 18),
+                label: const Text(
+                  'Read Daily Heritage Gazette',
+                  style: TextStyle(fontWeight: FontWeight.w800, fontSize: 13),
+                ),
+              ),
+            ],
+          ),
+        ),
+      ],
     );
   }
 

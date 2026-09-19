@@ -1,14 +1,10 @@
 import 'package:flutter/material.dart';
 
 import 'products_screen.dart';
-import 'add_product_screen.dart';
-import 'pricing_screen.dart';
-import 'marketplace_screen.dart';
 import 'business_screen.dart';
-import 'image_studio_screen.dart';
-import 'artisan_profile_screen.dart';
 import 'artisan_auctions_screen.dart';
 import 'artisan_community_screen.dart';
+import 'artisan_hub_screen.dart';
 import '../widgets/support_chatbot.dart';
 
 class HomeScreen extends StatefulWidget {
@@ -30,23 +26,10 @@ class _HomeScreenState extends State<HomeScreen> {
     _pages = const [
       BusinessScreen(),
       ProductsScreen(),
-      AddProductScreen(),
       ArtisanAuctionsScreen(),
       ArtisanCommunityScreen(),
-      PricingScreen(),
-      MarketplaceScreen(),
-      ArtisanProfileScreen(),
+      ArtisanHubScreen(),
     ];
-  }
-
-  // ============================================================
-  // OPEN AI IMAGE STUDIO
-  // ============================================================
-
-  void _openImageStudio() {
-    Navigator.of(
-      context,
-    ).push(MaterialPageRoute(builder: (context) => const ImageStudioScreen()));
   }
 
   // ============================================================
@@ -78,37 +61,19 @@ class _HomeScreenState extends State<HomeScreen> {
       body: IndexedStack(index: _currentIndex, children: _pages),
 
       // ========================================================
-      // AI STUDIO & CHATBOT BUTTONS
+      // CHATBOT BUTTON (COMPACT CIRCULAR TO PREVENT OVERLAP)
       // ========================================================
       floatingActionButton: _currentIndex == 0
-          ? Row(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                FloatingActionButton.extended(
-                  heroTag: 'artisan-ai-studio',
-                  onPressed: _openImageStudio,
-                  backgroundColor: const Color(0xFFA24B2A),
-                  foregroundColor: Colors.white,
-                  elevation: 6,
-                  icon: const Icon(Icons.auto_fix_high),
-                  label: const Text(
-                    'AI Studio',
-                    style: TextStyle(fontWeight: FontWeight.w800, fontSize: 12),
-                  ),
-                ),
-                const SizedBox(width: 8),
-                const SupportChatbot(role: 'artisan'),
-              ],
-            )
+          ? const SupportChatbot(role: 'artisan', compact: true)
           : null,
 
       floatingActionButtonLocation: FloatingActionButtonLocation.endFloat,
 
       // ========================================================
-      // BOTTOM NAVIGATION
+      // 5-DESTINATION CLEAN BOTTOM NAVIGATION BAR
       // ========================================================
       bottomNavigationBar: NavigationBar(
-        height: 78,
+        height: 72,
         backgroundColor: Colors.white,
         elevation: 4,
         selectedIndex: _currentIndex,
@@ -127,11 +92,6 @@ class _HomeScreenState extends State<HomeScreen> {
             label: 'Crafts',
           ),
           NavigationDestination(
-            icon: Icon(Icons.add_circle_outline),
-            selectedIcon: Icon(Icons.add_circle, color: Color(0xFFA24B2A)),
-            label: 'Create',
-          ),
-          NavigationDestination(
             icon: Icon(Icons.gavel_outlined),
             selectedIcon: Icon(Icons.gavel, color: Color(0xFFA24B2A)),
             label: 'Auctions',
@@ -139,22 +99,12 @@ class _HomeScreenState extends State<HomeScreen> {
           NavigationDestination(
             icon: Icon(Icons.forum_outlined),
             selectedIcon: Icon(Icons.forum, color: Color(0xFFA24B2A)),
-            label: 'Community',
+            label: 'Guild',
           ),
           NavigationDestination(
-            icon: Icon(Icons.balance_outlined),
-            selectedIcon: Icon(Icons.balance, color: Color(0xFFA24B2A)),
-            label: 'Fair Price',
-          ),
-          NavigationDestination(
-            icon: Icon(Icons.storefront_outlined),
-            selectedIcon: Icon(Icons.storefront, color: Color(0xFFA24B2A)),
-            label: 'Market',
-          ),
-          NavigationDestination(
-            icon: Icon(Icons.person_outline_rounded),
-            selectedIcon: Icon(Icons.person_rounded, color: Color(0xFFA24B2A)),
-            label: 'Profile',
+            icon: Icon(Icons.widgets_outlined),
+            selectedIcon: Icon(Icons.widgets, color: Color(0xFFA24B2A)),
+            label: 'Hub',
           ),
         ],
       ),

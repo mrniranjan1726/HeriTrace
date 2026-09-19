@@ -237,121 +237,111 @@ class _CustomerHomeScreenState extends State<CustomerHomeScreen>
 
     return Scaffold(
       backgroundColor: _bodyBg,
-      floatingActionButton: const SupportChatbot(role: 'customer'),
-      body: Stack(
-        children: [
-          CustomScrollView(
-            slivers: [
-              // Purple Header with Brand switcher, Address/Coins, Search, Categories
-              _buildSliverHeader(context),
+      floatingActionButton: const SupportChatbot(role: 'customer', compact: true),
+      body: CustomScrollView(
+        slivers: [
+          // Purple Header with Brand switcher, Address/Coins, Search, Categories
+          _buildSliverHeader(context),
 
-              // Campaign Mega Banner ("The Big Heritage Days")
-              SliverToBoxAdapter(
-                child: _buildMegaCampaignBanner()
-                    .animate()
-                    .fadeIn(duration: 400.ms)
-                    .slideY(begin: 0.05, end: 0),
-              ),
+          // Live Auction Alert Banner (Inline, completely non-overlapping)
+          if (_isPipVisible)
+            SliverToBoxAdapter(
+              child: _buildLiveAuctionAlertBanner()
+                  .animate()
+                  .fadeIn(duration: 350.ms),
+            ),
 
-              // Promotional Carousel Banner with Flipkart-style dots
-              SliverToBoxAdapter(
-                child: _buildCarouselSection()
-                    .animate(delay: 80.ms)
-                    .fadeIn(duration: 450.ms),
-              ),
-
-              // Personalized Deal Rail: "NIRANJAN, weekend is here 🎉"
-              SliverToBoxAdapter(
-                child: _buildPersonalizedDealRail()
-                    .animate(delay: 140.ms)
-                    .fadeIn(duration: 450.ms)
-                    .slideY(begin: 0.05, end: 0),
-              ),
-
-              // Sliding Sponsored Product Advertisements (Flipkart-style)
-              SliverToBoxAdapter(
-                child: _buildSlidingProductAdvertisementsRail()
-                    .animate(delay: 180.ms)
-                    .fadeIn(duration: 450.ms)
-                    .slideY(begin: 0.05, end: 0),
-              ),
-
-              // Feed Section Header
-              SliverToBoxAdapter(
-                child: Padding(
-                  padding: const EdgeInsets.fromLTRB(16, 20, 16, 10),
-                  child: Row(
-                    children: [
-                      Container(
-                        width: 4,
-                        height: 18,
-                        decoration: BoxDecoration(
-                          color: _purpleHeaderStart,
-                          borderRadius: BorderRadius.circular(2),
-                        ),
-                      ),
-                      const SizedBox(width: 8),
-                      Expanded(
-                        child: Text(
-                          _selectedCategory == 'For You'
-                              ? 'Suggested For You'
-                              : '$_selectedCategory Collection',
-                          style: const TextStyle(
-                            fontSize: 18,
-                            fontWeight: FontWeight.w800,
-                            color: _primaryText,
-                          ),
-                        ),
-                      ),
-                      StreamBuilder<QuerySnapshot<Map<String, dynamic>>>(
-                        stream: FirebaseFirestore.instance
-                            .collectionGroup('products')
-                            .snapshots(),
-                        builder: (context, snapshot) {
-                          final count = snapshot.data?.docs.length ?? 0;
-                          return Container(
-                            padding: const EdgeInsets.symmetric(
-                              horizontal: 8,
-                              vertical: 3,
-                            ),
-                            decoration: BoxDecoration(
-                              color: const Color(0xFFE5E7EB),
-                              borderRadius: BorderRadius.circular(12),
-                            ),
-                            child: Text(
-                              '$count items',
-                              style: const TextStyle(
-                                fontSize: 11,
-                                fontWeight: FontWeight.w700,
-                                color: _secondaryText,
-                              ),
-                            ),
-                          );
-                        },
-                      ),
-                    ],
-                  ),
-                ),
-              ),
-
-              // Real 2-Column Product Grid
-              _buildProductGrid(),
-            ],
+          // Campaign Mega Banner ("The Big Heritage Days")
+          SliverToBoxAdapter(
+            child: _buildMegaCampaignBanner()
+                .animate()
+                .fadeIn(duration: 400.ms)
+                .slideY(begin: 0.05, end: 0),
           ),
 
-          // Floating Picture-in-Picture (PIP) Live Auction / Studio widget
-          if (_isPipVisible)
-            Positioned(
-              right: 14,
-              bottom: 16,
-              child: _buildFloatingPipWidget()
-                  .animate()
-                  .fadeIn(duration: 400.ms)
-                  .scale(
-                    begin: const Offset(0.8, 0.8),
-                    end: const Offset(1, 1),
+          // Promotional Carousel Banner with Flipkart-style dots
+          SliverToBoxAdapter(
+            child: _buildCarouselSection()
+                .animate(delay: 80.ms)
+                .fadeIn(duration: 450.ms),
+          ),
+
+          // Personalized Deal Rail: "NIRANJAN, weekend is here 🎉"
+          SliverToBoxAdapter(
+            child: _buildPersonalizedDealRail()
+                .animate(delay: 140.ms)
+                .fadeIn(duration: 450.ms)
+                .slideY(begin: 0.05, end: 0),
+          ),
+
+          // Sliding Sponsored Product Advertisements (Flipkart-style)
+          SliverToBoxAdapter(
+            child: _buildSlidingProductAdvertisementsRail()
+                .animate(delay: 180.ms)
+                .fadeIn(duration: 450.ms)
+                .slideY(begin: 0.05, end: 0),
+          ),
+
+          // Feed Section Header
+          SliverToBoxAdapter(
+            child: Padding(
+              padding: const EdgeInsets.fromLTRB(16, 20, 16, 10),
+              child: Row(
+                children: [
+                  Container(
+                    width: 4,
+                    height: 18,
+                    decoration: BoxDecoration(
+                      color: _purpleHeaderStart,
+                      borderRadius: BorderRadius.circular(2),
+                    ),
                   ),
+                  const SizedBox(width: 8),
+                  Expanded(
+                    child: Text(
+                      _selectedCategory == 'For You'
+                          ? 'Suggested For You'
+                          : '$_selectedCategory Collection',
+                      style: const TextStyle(
+                        fontSize: 18,
+                        fontWeight: FontWeight.w800,
+                        color: _primaryText,
+                      ),
+                    ),
+                  ),
+                  StreamBuilder<QuerySnapshot<Map<String, dynamic>>>(
+                    stream: FirebaseFirestore.instance
+                        .collectionGroup('products')
+                        .snapshots(),
+                    builder: (context, snapshot) {
+                      final count = snapshot.data?.docs.length ?? 0;
+                      return Container(
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 8,
+                          vertical: 3,
+                        ),
+                        decoration: BoxDecoration(
+                          color: const Color(0xFFE5E7EB),
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                        child: Text(
+                          '$count items',
+                          style: const TextStyle(
+                            fontSize: 11,
+                            fontWeight: FontWeight.w700,
+                            color: _secondaryText,
+                          ),
+                        ),
+                      );
+                    },
+                  ),
+                ],
+              ),
             ),
+          ),
+
+          // Real 2-Column Product Grid
+          _buildProductGrid(),
         ],
       ),
       bottomNavigationBar: _buildBottomNavigationBar(),
@@ -1561,105 +1551,108 @@ class _CustomerHomeScreenState extends State<CustomerHomeScreen>
   }
 
   // ============================================================
-  // FLOATING PICTURE-IN-PICTURE (PIP) WIDGET
+  // INLINE LIVE AUCTION ALERT BANNER (NON-OVERLAPPING)
   // ============================================================
 
-  Widget _buildFloatingPipWidget() {
+  Widget _buildLiveAuctionAlertBanner() {
     return Container(
-      width: 165,
-      padding: const EdgeInsets.all(10),
+      margin: const EdgeInsets.fromLTRB(14, 10, 14, 4),
+      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
       decoration: BoxDecoration(
-        color: const Color(0xFF1E1E24).withValues(alpha: 0.95),
+        color: const Color(0xFF1E1E24),
         borderRadius: BorderRadius.circular(16),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withValues(alpha: 0.35),
-            blurRadius: 14,
-            offset: const Offset(0, 6),
+            color: Colors.black.withValues(alpha: 0.14),
+            blurRadius: 10,
+            offset: const Offset(0, 3),
           ),
         ],
       ),
-      child: Column(
-        mainAxisSize: MainAxisSize.min,
-        crossAxisAlignment: CrossAxisAlignment.start,
+      child: Row(
         children: [
-          Row(
-            children: [
-              // Pulsing LIVE badge
-              Container(
-                padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
-                decoration: BoxDecoration(
-                  color: const Color(0xFFD50000),
-                  borderRadius: BorderRadius.circular(8),
-                ),
-                child: const Row(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    Icon(Icons.circle, size: 6, color: Colors.white),
-                    SizedBox(width: 3),
-                    Text(
-                      'LIVE',
-                      style: TextStyle(
-                        color: Colors.white,
-                        fontSize: 9,
-                        fontWeight: FontWeight.w900,
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-              const Spacer(),
-              // Dismiss button
-              InkWell(
-                onTap: () => setState(() => _isPipVisible = false),
-                child: const Icon(Icons.close, size: 15, color: Colors.white70),
-              ),
-            ],
-          ),
-          const SizedBox(height: 8),
-          InkWell(
-            onTap: () {
-              Navigator.pushNamed(context, '/customer-auctions');
-            },
-            child: Row(
+          // LIVE indicator badge
+          Container(
+            padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2.5),
+            decoration: BoxDecoration(
+              color: const Color(0xFFD50000),
+              borderRadius: BorderRadius.circular(6),
+            ),
+            child: const Row(
+              mainAxisSize: MainAxisSize.min,
               children: [
-                ClipRRect(
-                  borderRadius: BorderRadius.circular(8),
-                  child: Image.network(
-                    'https://images.unsplash.com/photo-1616486338812-3dadae4b4ace?auto=format&fit=crop&w=150&q=80',
-                    width: 44,
-                    height: 44,
-                    fit: BoxFit.cover,
-                  ),
-                ),
-                const SizedBox(width: 8),
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: const [
-                      Text(
-                        'Extra ₹500 Off',
-                        style: TextStyle(
-                          color: _flipkartYellow,
-                          fontSize: 11,
-                          fontWeight: FontWeight.w900,
-                        ),
-                      ),
-                      SizedBox(height: 2),
-                      Text(
-                        'Rare Heritage Auctions',
-                        maxLines: 2,
-                        overflow: TextOverflow.ellipsis,
-                        style: TextStyle(
-                          color: Colors.white70,
-                          fontSize: 9,
-                          fontWeight: FontWeight.w600,
-                        ),
-                      ),
-                    ],
+                Icon(Icons.circle, size: 6, color: Colors.white),
+                SizedBox(width: 4),
+                Text(
+                  'LIVE',
+                  style: TextStyle(
+                    color: Colors.white,
+                    fontSize: 8.5,
+                    fontWeight: FontWeight.w900,
+                    letterSpacing: 0.6,
                   ),
                 ),
               ],
+            ),
+          ),
+          const SizedBox(width: 10),
+          Expanded(
+            child: InkWell(
+              onTap: () => Navigator.pushNamed(context, '/customer-auctions'),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: const [
+                  Text(
+                    'Rare Heritage Auctions: Live Bidding Active',
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                    style: TextStyle(
+                      color: Colors.white,
+                      fontSize: 12,
+                      fontWeight: FontWeight.w800,
+                    ),
+                  ),
+                  SizedBox(height: 1),
+                  Text(
+                    'Bid on GI handlooms & sculptures • Extra ₹500 discount',
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                    style: TextStyle(
+                      color: Color(0xFFFFE500),
+                      fontSize: 10,
+                      fontWeight: FontWeight.w700,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ),
+          const SizedBox(width: 8),
+          InkWell(
+            onTap: () => Navigator.pushNamed(context, '/customer-auctions'),
+            borderRadius: BorderRadius.circular(8),
+            child: Container(
+              padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+              decoration: BoxDecoration(
+                color: _flipkartYellow,
+                borderRadius: BorderRadius.circular(8),
+              ),
+              child: const Text(
+                'Enter',
+                style: TextStyle(
+                  color: Color(0xFF1B1464),
+                  fontSize: 11,
+                  fontWeight: FontWeight.w900,
+                ),
+              ),
+            ),
+          ),
+          const SizedBox(width: 6),
+          InkWell(
+            onTap: () => setState(() => _isPipVisible = false),
+            child: const Padding(
+              padding: EdgeInsets.all(4),
+              child: Icon(Icons.close, size: 16, color: Colors.white60),
             ),
           ),
         ],
@@ -1724,7 +1717,7 @@ class _CustomerHomeScreenState extends State<CustomerHomeScreen>
         }
 
         return SliverPadding(
-          padding: const EdgeInsets.fromLTRB(10, 0, 10, 90),
+          padding: const EdgeInsets.fromLTRB(10, 0, 10, 110),
           sliver: SliverLayoutBuilder(
             builder: (context, constraints) {
               final width = constraints.crossAxisExtent;
@@ -1787,15 +1780,15 @@ class _CustomerHomeScreenState extends State<CustomerHomeScreen>
               _buildBottomNavItem(
                 index: 0,
                 label: 'Home',
-                icon: Icons.home,
+                icon: Icons.home_outlined,
                 activeIcon: Icons.home_filled,
                 onTap: () => setState(() => _bottomNavIndex = 0),
               ),
               _buildBottomNavItem(
                 index: 1,
-                label: 'Play',
-                icon: Icons.play_circle_outline,
-                activeIcon: Icons.play_circle_filled,
+                label: 'Auctions',
+                icon: Icons.gavel_outlined,
+                activeIcon: Icons.gavel_rounded,
                 onTap: () {
                   Navigator.pushNamed(context, '/customer-auctions');
                 },

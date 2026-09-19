@@ -2,8 +2,13 @@ import 'package:flutter/material.dart';
 
 class SupportChatbot extends StatelessWidget {
   final String role;
+  final bool compact;
 
-  const SupportChatbot({super.key, required this.role});
+  const SupportChatbot({
+    super.key,
+    required this.role,
+    this.compact = false,
+  });
 
   void _open(BuildContext context) {
     showModalBottomSheet(
@@ -16,13 +21,26 @@ class SupportChatbot extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    if (compact) {
+      return FloatingActionButton(
+        heroTag: 'support-chat-$role',
+        onPressed: () => _open(context),
+        backgroundColor: const Color(0xFFA24B2A),
+        foregroundColor: Colors.white,
+        tooltip: 'HeriGuide Help',
+        elevation: 4,
+        child: const Icon(Icons.support_agent_rounded, size: 24),
+      );
+    }
+
     return FloatingActionButton.extended(
       heroTag: 'support-chat-$role',
       onPressed: () => _open(context),
       backgroundColor: const Color(0xFFA24B2A),
       foregroundColor: Colors.white,
+      elevation: 4,
       icon: const Icon(Icons.support_agent_rounded),
-      label: const Text('Help'),
+      label: const Text('Help', style: TextStyle(fontWeight: FontWeight.w700)),
     );
   }
 }
