@@ -32,12 +32,17 @@ class _CustomerHomeScreenState extends State<CustomerHomeScreen>
 
   final TextEditingController _searchController = TextEditingController();
   final PageController _carouselPageController = PageController();
+  late final ScrollController _scrollController;
 
   Timer? _searchHintTimer;
   Timer? _carouselTimer;
 
-  int _searchHintIndex = 0;
-  int _currentCarouselIndex = 0;
+  final ValueNotifier<int> _searchHintNotifier = ValueNotifier<int>(0);
+  final ValueNotifier<int> _carouselIndexNotifier = ValueNotifier<int>(0);
+
+  late final Stream<QuerySnapshot<Map<String, dynamic>>> _productsStream;
+  late final Stream<QuerySnapshot<Map<String, dynamic>>> _cartStream;
+
   bool _isAuctionAlertVisible = true;
   String _selectedDeliveryAddress = 'Banisri Bihar, Patna 800001';
   int _userCoins = 120;
@@ -183,22 +188,31 @@ class _CustomerHomeScreenState extends State<CustomerHomeScreen>
   void initState() {
     super.initState();
 
+    _scrollController = ScrollController();
+    _productsStream = FirebaseFirestore.instance
+        .collectionGroup('products')
+        .snapshots();
+    _cartStream = _cartCollection.snapshots();
+
     _searchHintTimer = Timer.periodic(const Duration(seconds: 3), (timer) {
       if (mounted) {
-        setState(() {
-          _searchHintIndex = (_searchHintIndex + 1) % _searchHints.length;
-        });
+        _searchHintNotifier.value =
+            (_searchHintNotifier.value + 1) % _searchHints.length;
       }
     });
 
     _carouselTimer = Timer.periodic(const Duration(seconds: 5), (timer) {
       if (mounted && _carouselPageController.hasClients) {
-        final nextIndex = (_currentCarouselIndex + 1) % _heroBanners.length;
-        _carouselPageController.animateToPage(
-          nextIndex,
-          duration: const Duration(milliseconds: 500),
-          curve: Curves.easeInOutCubic,
-        );
+        // Prevent auto-scrolling hero banner when user is scrolled down into the products
+        if (!_scrollController.hasClients || _scrollController.offset < 280) {
+          final nextIndex =
+              (_carouselIndexNotifier.value + 1) % _heroBanners.length;
+          _carouselPageController.animateToPage(
+            nextIndex,
+            duration: const Duration(milliseconds: 500),
+            curve: Curves.easeInOutCubic,
+          );
+        }
       }
     });
   }
@@ -207,8 +221,11 @@ class _CustomerHomeScreenState extends State<CustomerHomeScreen>
   void dispose() {
     _searchHintTimer?.cancel();
     _carouselTimer?.cancel();
+    _searchHintNotifier.dispose();
+    _carouselIndexNotifier.dispose();
     _searchController.dispose();
     _carouselPageController.dispose();
+    _scrollController.dispose();
     super.dispose();
   }
 
@@ -224,6 +241,11 @@ class _CustomerHomeScreenState extends State<CustomerHomeScreen>
       backgroundColor: _pageBackground,
       floatingActionButton: const SupportChatbot(role: 'customer', compact: true),
       body: CustomScrollView(
+        key: const PageStorageKey<String>('customer_home_scroll'),
+        controller: _scrollController,
+        physics: const AlwaysScrollableScrollPhysics(
+          parent: BouncingScrollPhysics(),
+        ),
         slivers: [
           // 1. Clean Premium Header (Welcome, Coins, Address, Search, Categories)
           _buildHeader(context),
@@ -290,9 +312,7 @@ class _CustomerHomeScreenState extends State<CustomerHomeScreen>
                     ),
                   ),
                   StreamBuilder<QuerySnapshot<Map<String, dynamic>>>(
-                    stream: FirebaseFirestore.instance
-                        .collectionGroup('products')
-                        .snapshots(),
+                    stream: _productsStream,
                     builder: (context, snapshot) {
                       final count = snapshot.data?.docs.length ?? 0;
                       return Container(
@@ -450,7 +470,7 @@ class _CustomerHomeScreenState extends State<CustomerHomeScreen>
 
                     // Cart with Live Count Badge
                     StreamBuilder<QuerySnapshot<Map<String, dynamic>>>(
-                      stream: _cartCollection.snapshots(),
+                      stream: _cartStream,
                       builder: (context, snapshot) {
                         final count = snapshot.data?.docs.length ?? 0;
                         return InkWell(
@@ -567,18 +587,23 @@ class _CustomerHomeScreenState extends State<CustomerHomeScreen>
                           alignment: Alignment.centerLeft,
                           children: [
                             if (_searchQuery.isEmpty)
-                              AnimatedSwitcher(
-                                duration: const Duration(milliseconds: 300),
-                                child: Text(
-                                  'Search ${_searchHints[_searchHintIndex]}',
-                                  key: ValueKey<int>(_searchHintIndex),
-                                  maxLines: 1,
-                                  overflow: TextOverflow.ellipsis,
-                                  style: const TextStyle(
-                                    color: Color(0xFF9E9E9E),
-                                    fontSize: 13,
-                                  ),
-                                ),
+                              ValueListenableBuilder<int>(
+                                valueListenable: _searchHintNotifier,
+                                builder: (context, hintIdx, _) {
+                                  return AnimatedSwitcher(
+                                    duration: const Duration(milliseconds: 300),
+                                    child: Text(
+                                      'Search ${_searchHints[hintIdx]}',
+                                      key: ValueKey<int>(hintIdx),
+                                      maxLines: 1,
+                                      overflow: TextOverflow.ellipsis,
+                                      style: const TextStyle(
+                                        color: Color(0xFF9E9E9E),
+                                        fontSize: 13,
+                                      ),
+                                    ),
+                                  );
+                                },
                               ),
                             TextField(
                               controller: _searchController,
@@ -791,130 +816,138 @@ class _CustomerHomeScreenState extends State<CustomerHomeScreen>
         children: [
           SizedBox(
             height: 175,
-            child: PageView.builder(
-              controller: _carouselPageController,
-              itemCount: _heroBanners.length,
-              onPageChanged: (i) => setState(() => _currentCarouselIndex = i),
-              itemBuilder: (context, index) {
-                final banner = _heroBanners[index];
-                return Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 14),
-                  child: ClipRRect(
-                    borderRadius: BorderRadius.circular(18),
-                    child: Stack(
-                      children: [
-                        Positioned.fill(
-                          child: (banner['imageUrl'] as String).startsWith('assets/')
-                              ? Image.asset(
-                                  banner['imageUrl'] as String,
-                                  fit: BoxFit.cover,
-                                  errorBuilder: (_, _, _) => Image.network(
-                                    'https://heritrace.web.app/assets/images/heritage_shirt.png',
+            child: NotificationListener<ScrollNotification>(
+              onNotification: (notification) => true,
+              child: PageView.builder(
+                controller: _carouselPageController,
+                itemCount: _heroBanners.length,
+                onPageChanged: (i) => _carouselIndexNotifier.value = i,
+                itemBuilder: (context, index) {
+                  final banner = _heroBanners[index];
+                  return Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 14),
+                    child: ClipRRect(
+                      borderRadius: BorderRadius.circular(18),
+                      child: Stack(
+                        children: [
+                          Positioned.fill(
+                            child: (banner['imageUrl'] as String).startsWith('assets/')
+                                ? Image.asset(
+                                    banner['imageUrl'] as String,
                                     fit: BoxFit.cover,
+                                    errorBuilder: (_, _, _) => Image.network(
+                                      'https://heritrace.web.app/assets/images/heritage_shirt.png',
+                                      fit: BoxFit.cover,
+                                    ),
+                                  )
+                                : Image.network(
+                                    banner['imageUrl'] as String,
+                                    fit: BoxFit.cover,
+                                    errorBuilder: (_, _, _) => Container(color: Colors.grey.shade300),
                                   ),
-                                )
-                              : Image.network(
-                                  banner['imageUrl'] as String,
-                                  fit: BoxFit.cover,
-                                  errorBuilder: (_, _, _) => Container(color: Colors.grey.shade300),
+                          ),
+                          Positioned.fill(
+                            child: DecoratedBox(
+                              decoration: BoxDecoration(
+                                gradient: LinearGradient(
+                                  begin: Alignment.centerLeft,
+                                  end: Alignment.centerRight,
+                                  colors: [
+                                    Colors.black.withValues(alpha: 0.85),
+                                    Colors.black.withValues(alpha: 0.45),
+                                    Colors.transparent,
+                                  ],
                                 ),
-                        ),
-                        Positioned.fill(
-                          child: DecoratedBox(
-                            decoration: BoxDecoration(
-                              gradient: LinearGradient(
-                                begin: Alignment.centerLeft,
-                                end: Alignment.centerRight,
-                                colors: [
-                                  Colors.black.withValues(alpha: 0.85),
-                                  Colors.black.withValues(alpha: 0.45),
-                                  Colors.transparent,
-                                ],
                               ),
                             ),
                           ),
-                        ),
-                        Padding(
-                          padding: const EdgeInsets.all(16),
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            mainAxisAlignment: MainAxisAlignment.center,
-                            children: [
-                              Container(
-                                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
-                                decoration: BoxDecoration(
-                                  color: _heirloomGold,
-                                  borderRadius: BorderRadius.circular(4),
-                                ),
-                                child: Text(
-                                  banner['tag'] as String,
-                                  style: const TextStyle(
-                                    fontSize: 8.5,
-                                    fontWeight: FontWeight.w900,
-                                    color: Color(0xFF4A1208),
+                          Padding(
+                            padding: const EdgeInsets.all(16),
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              children: [
+                                Container(
+                                  padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+                                  decoration: BoxDecoration(
+                                    color: _heirloomGold,
+                                    borderRadius: BorderRadius.circular(4),
+                                  ),
+                                  child: Text(
+                                    banner['tag'] as String,
+                                    style: const TextStyle(
+                                      fontSize: 8.5,
+                                      fontWeight: FontWeight.w900,
+                                      color: Color(0xFF4A1208),
+                                    ),
                                   ),
                                 ),
-                              ),
-                              const SizedBox(height: 6),
-                              Text(
-                                banner['title'] as String,
-                                style: const TextStyle(
-                                  color: Colors.white,
-                                  fontSize: 18,
-                                  fontWeight: FontWeight.w900,
-                                ),
-                              ),
-                              const SizedBox(height: 3),
-                              Text(
-                                banner['artisan'] as String,
-                                style: const TextStyle(
-                                  color: Color(0xFFE8C8A3),
-                                  fontSize: 11,
-                                  fontWeight: FontWeight.w600,
-                                ),
-                              ),
-                              const SizedBox(height: 6),
-                              Container(
-                                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
-                                decoration: BoxDecoration(
-                                  color: Colors.white.withValues(alpha: 0.2),
-                                  borderRadius: BorderRadius.circular(4),
-                                ),
-                                child: Text(
-                                  '${banner['badge']} • ${banner['price']}',
+                                const SizedBox(height: 6),
+                                Text(
+                                  banner['title'] as String,
                                   style: const TextStyle(
                                     color: Colors.white,
-                                    fontSize: 10.5,
-                                    fontWeight: FontWeight.w800,
+                                    fontSize: 18,
+                                    fontWeight: FontWeight.w900,
                                   ),
                                 ),
-                              ),
-                            ],
+                                const SizedBox(height: 3),
+                                Text(
+                                  banner['artisan'] as String,
+                                  style: const TextStyle(
+                                    color: Color(0xFFE8C8A3),
+                                    fontSize: 11,
+                                    fontWeight: FontWeight.w600,
+                                  ),
+                                ),
+                                const SizedBox(height: 6),
+                                Container(
+                                  padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+                                  decoration: BoxDecoration(
+                                    color: Colors.white.withValues(alpha: 0.2),
+                                    borderRadius: BorderRadius.circular(4),
+                                  ),
+                                  child: Text(
+                                    '${banner['badge']} • ${banner['price']}',
+                                    style: const TextStyle(
+                                      color: Colors.white,
+                                      fontSize: 10.5,
+                                      fontWeight: FontWeight.w800,
+                                    ),
+                                  ),
+                                ),
+                              ],
+                            ),
                           ),
-                        ),
-                      ],
+                        ],
+                      ),
                     ),
-                  ),
-                );
-              },
+                  );
+                },
+              ),
             ),
           ),
           const SizedBox(height: 8),
-          Row(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: List.generate(_heroBanners.length, (i) {
-              final isActive = i == _currentCarouselIndex;
-              return AnimatedContainer(
-                duration: const Duration(milliseconds: 250),
-                margin: const EdgeInsets.symmetric(horizontal: 3),
-                width: isActive ? 20 : 6,
-                height: 4,
-                decoration: BoxDecoration(
-                  color: isActive ? _primaryTerracotta : _cardBorder,
-                  borderRadius: BorderRadius.circular(2),
-                ),
+          ValueListenableBuilder<int>(
+            valueListenable: _carouselIndexNotifier,
+            builder: (context, activeIndex, _) {
+              return Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: List.generate(_heroBanners.length, (i) {
+                  final isActive = i == activeIndex;
+                  return AnimatedContainer(
+                    duration: const Duration(milliseconds: 250),
+                    margin: const EdgeInsets.symmetric(horizontal: 3),
+                    width: isActive ? 20 : 6,
+                    height: 4,
+                    decoration: BoxDecoration(
+                      color: isActive ? _primaryTerracotta : _cardBorder,
+                      borderRadius: BorderRadius.circular(2),
+                    ),
+                  );
+                }),
               );
-            }),
+            },
           ),
         ],
       ),
@@ -1064,12 +1097,14 @@ class _CustomerHomeScreenState extends State<CustomerHomeScreen>
           const SizedBox(height: 12),
           SizedBox(
             height: 195,
-            child: ListView.separated(
-              padding: const EdgeInsets.symmetric(horizontal: 14),
-              scrollDirection: Axis.horizontal,
-              itemCount: _trendingItems.length,
-              separatorBuilder: (_, _) => const SizedBox(width: 10),
-              itemBuilder: (context, index) {
+            child: NotificationListener<ScrollNotification>(
+              onNotification: (notification) => true,
+              child: ListView.separated(
+                padding: const EdgeInsets.symmetric(horizontal: 14),
+                scrollDirection: Axis.horizontal,
+                itemCount: _trendingItems.length,
+                separatorBuilder: (_, _) => const SizedBox(width: 10),
+                itemBuilder: (context, index) {
                 final item = _trendingItems[index];
                 return Container(
                   width: 135,
@@ -1182,6 +1217,7 @@ class _CustomerHomeScreenState extends State<CustomerHomeScreen>
               },
             ),
           ),
+        ),
         ],
       ),
     );
@@ -1193,9 +1229,7 @@ class _CustomerHomeScreenState extends State<CustomerHomeScreen>
 
   Widget _buildProductGrid() {
     return StreamBuilder<QuerySnapshot<Map<String, dynamic>>>(
-      stream: FirebaseFirestore.instance
-          .collectionGroup('products')
-          .snapshots(),
+      stream: _productsStream,
       builder: (context, snapshot) {
         if (snapshot.hasError) {
           return SliverFillRemaining(
@@ -1204,7 +1238,7 @@ class _CustomerHomeScreenState extends State<CustomerHomeScreen>
           );
         }
 
-        if (snapshot.connectionState == ConnectionState.waiting) {
+        if (!snapshot.hasData && snapshot.connectionState == ConnectionState.waiting) {
           return const SliverFillRemaining(
             hasScrollBody: false,
             child: Center(
