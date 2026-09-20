@@ -7,6 +7,7 @@ import 'package:flutter_animate/flutter_animate.dart';
 
 import 'customer_cart_screen.dart';
 import 'customer_orders_screen.dart';
+import 'customer_wishlist_screen.dart';
 import 'package:speech_to_text/speech_to_text.dart' as stt;
 import '../widgets/support_chatbot.dart';
 
@@ -45,6 +46,7 @@ class _CustomerHomeScreenState extends State<CustomerHomeScreen>
 
   late final Stream<QuerySnapshot<Map<String, dynamic>>> _productsStream;
   late final Stream<QuerySnapshot<Map<String, dynamic>>> _cartStream;
+  late final Stream<QuerySnapshot<Map<String, dynamic>>> _wishlistStream;
 
   bool _isAuctionAlertVisible = true;
   String _selectedDeliveryAddress = 'Banisri Bihar, Patna 800001';
@@ -217,6 +219,13 @@ class _CustomerHomeScreenState extends State<CustomerHomeScreen>
         .collection('cart');
   }
 
+  CollectionReference<Map<String, dynamic>> get _wishlistCollection {
+    return FirebaseFirestore.instance
+        .collection('users')
+        .doc(_user?.uid)
+        .collection('wishlist');
+  }
+
   @override
   void initState() {
     super.initState();
@@ -226,6 +235,7 @@ class _CustomerHomeScreenState extends State<CustomerHomeScreen>
         .collectionGroup('products')
         .snapshots();
     _cartStream = _cartCollection.snapshots();
+    _wishlistStream = _wishlistCollection.snapshots();
 
     _searchHintTimer = Timer.periodic(const Duration(seconds: 3), (timer) {
       if (mounted) {
@@ -474,6 +484,69 @@ class _CustomerHomeScreenState extends State<CustomerHomeScreen>
                           ],
                         ),
                       ),
+                    ),
+
+                    const SizedBox(width: 8),
+
+                    // Wishlist Button with Live Count Badge
+                    StreamBuilder<QuerySnapshot<Map<String, dynamic>>>(
+                      stream: _wishlistStream,
+                      builder: (context, snapshot) {
+                        final count = snapshot.data?.docs.length ?? 0;
+                        return InkWell(
+                          borderRadius: BorderRadius.circular(20),
+                          onTap: () {
+                            Navigator.push(
+                              context,
+                              MaterialPageRoute(builder: (_) => const CustomerWishlistScreen()),
+                            );
+                          },
+                          child: Stack(
+                            clipBehavior: Clip.none,
+                            children: [
+                              Container(
+                                padding: const EdgeInsets.all(8),
+                                decoration: BoxDecoration(
+                                  color: _darkCapsule,
+                                  borderRadius: BorderRadius.circular(20),
+                                  border: Border.all(
+                                    color: count > 0 ? Colors.redAccent.withValues(alpha: 0.6) : Colors.white24,
+                                    width: 1,
+                                  ),
+                                ),
+                                child: Icon(
+                                  count > 0 ? Icons.favorite : Icons.favorite_border_rounded,
+                                  color: count > 0 ? Colors.redAccent : Colors.white,
+                                  size: 16,
+                                ),
+                              ),
+                              if (count > 0)
+                                Positioned(
+                                  right: -3,
+                                  top: -3,
+                                  child: Container(
+                                    padding: const EdgeInsets.all(3),
+                                    decoration: const BoxDecoration(
+                                      color: Colors.redAccent,
+                                      shape: BoxShape.circle,
+                                    ),
+                                    constraints: const BoxConstraints(minWidth: 16, minHeight: 16),
+                                    child: Center(
+                                      child: Text(
+                                        '$count',
+                                        style: const TextStyle(
+                                          color: Colors.white,
+                                          fontSize: 9,
+                                          fontWeight: FontWeight.w900,
+                                        ),
+                                      ),
+                                    ),
+                                  ),
+                                ),
+                            ],
+                          ),
+                        );
+                      },
                     ),
 
                     const SizedBox(width: 8),
@@ -1001,28 +1074,37 @@ class _CustomerHomeScreenState extends State<CustomerHomeScreen>
         children: [
           Expanded(
             child: _quickActionBtn(
+              icon: Icons.favorite_rounded,
+              label: 'Wishlist',
+              iconColor: Colors.redAccent,
+              onTap: () => Navigator.pushNamed(context, '/customer-wishlist'),
+            ),
+          ),
+          const SizedBox(width: 6),
+          Expanded(
+            child: _quickActionBtn(
               icon: Icons.gavel_rounded,
               label: 'Auctions',
               onTap: () => Navigator.pushNamed(context, '/customer-auctions'),
             ),
           ),
-          const SizedBox(width: 8),
+          const SizedBox(width: 6),
           Expanded(
             child: _quickActionBtn(
               icon: Icons.newspaper_rounded,
-              label: 'Craft News',
+              label: 'Gazette',
               onTap: () => Navigator.pushNamed(context, '/heritage-news'),
             ),
           ),
-          const SizedBox(width: 8),
+          const SizedBox(width: 6),
           Expanded(
             child: _quickActionBtn(
               icon: Icons.verified_outlined,
-              label: 'Certified GI',
+              label: 'GI Crafts',
               onTap: () => setState(() => _selectedCategory = 'Textiles'),
             ),
           ),
-          const SizedBox(width: 8),
+          const SizedBox(width: 6),
           Expanded(
             child: _quickActionBtn(
               icon: Icons.local_offer_outlined,
@@ -1039,6 +1121,7 @@ class _CustomerHomeScreenState extends State<CustomerHomeScreen>
     required IconData icon,
     required String label,
     required VoidCallback onTap,
+    Color? iconColor,
   }) {
     return InkWell(
       onTap: onTap,
@@ -1052,7 +1135,7 @@ class _CustomerHomeScreenState extends State<CustomerHomeScreen>
         ),
         child: Column(
           children: [
-            Icon(icon, size: 20, color: _primaryTerracotta),
+            Icon(icon, size: 20, color: iconColor ?? _primaryTerracotta),
             const SizedBox(height: 4),
             Text(
               label,
