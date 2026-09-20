@@ -21,6 +21,7 @@ import 'screens/admin_profile_screen.dart';
 import 'screens/about_screen.dart';
 import 'screens/artisan_community_screen.dart';
 import 'screens/heritage_news_screen.dart';
+import 'screens/trending_hericraft_screen.dart';
 
 class HeriTraceApp extends StatelessWidget {
   const HeriTraceApp({super.key});
@@ -179,6 +180,9 @@ class HeriTraceApp extends StatelessWidget {
         },
         '/heritage-news': (context) {
           return const HeritageNewsScreen();
+        },
+        '/trending': (context) {
+          return const TrendingHericraftScreen();
         },
         // ----------------------------------------------------------
         // ARTISAN

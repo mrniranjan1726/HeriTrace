@@ -115,63 +115,93 @@ class _CustomerHomeScreenState extends State<CustomerHomeScreen>
 
   final List<Map<String, dynamic>> _trendingItems = [
     {
+      'id': 'trending_shirt_01',
       'name': 'Heritage Printed Resort Shirt',
       'category': 'Textiles',
       'origin': 'Jaipur, Rajasthan',
       'price': 1499,
       'originalPrice': 2499,
       'artisanShare': 'Artisan receives ₹1,100',
+      'artisanName': 'Jaipur Handblock Artisans',
+      'artisanId': 'artisan_jaipur_01',
       'imageUrl': 'assets/images/heritage_shirt.png',
+      'description':
+          'Handcrafted premium resort-collar heritage shirt featuring authentic handblock lotus motifs and artisanal borders on pure breathable cotton. Tailored by generational Jaipuri artisans.',
     },
     {
+      'id': 'trending_box_02',
       'name': 'Carved Walnut Wood Box',
       'category': 'Woodcraft',
       'origin': 'Srinagar, Kashmir',
       'price': 899,
       'originalPrice': 1799,
       'artisanShare': 'Artisan receives ₹620',
+      'artisanName': 'Kashmir Woodcraft Guild',
+      'artisanId': 'artisan_kashmir_02',
       'imageUrl':
           'https://images.unsplash.com/photo-1590874103328-eac38a683ce7?auto=format&fit=crop&w=600&q=80',
+      'description':
+          'Exquisite walnut wood box hand-carved with traditional Chinar leaf and rosette motifs by master woodcrafters of the Kashmir valley. Finished with natural organic wax.',
     },
     {
+      'id': 'trending_brass_03',
       'name': 'Handmade Peacock Brass Lamp',
       'category': 'Decor',
       'origin': 'Moradabad, UP',
       'price': 649,
       'originalPrice': 1299,
       'artisanShare': 'Artisan receives ₹480',
+      'artisanName': 'Moradabad Metal Guild',
+      'artisanId': 'artisan_moradabad_03',
       'imageUrl':
           'https://images.unsplash.com/photo-1610701596007-11502861dcfa?auto=format&fit=crop&w=600&q=80',
+      'description':
+          'Traditional lost-wax bell metal brass lamp crowned with an auspicious dancing peacock. Hand-chiseled by generational brass metalworkers in Moradabad.',
     },
     {
+      'id': 'trending_pottery_04',
       'name': 'Jaipur Blue Ceramic Vase',
       'category': 'Pottery',
       'origin': 'Jaipur, Rajasthan',
       'price': 499,
       'originalPrice': 1199,
       'artisanShare': 'Artisan receives ₹350',
+      'artisanName': 'Kripal Blue Pottery Studio',
+      'artisanId': 'artisan_jaipur_04',
       'imageUrl':
           'https://images.unsplash.com/photo-1578749556568-bc2c40e68b61?auto=format&fit=crop&w=600&q=80',
+      'description':
+          'Authentic Jaipur blue pottery vase glazed with natural quartz stone powder and plant pigments, fired without clay in traditional wood kilns.',
     },
     {
+      'id': 'trending_painting_05',
       'name': 'Handmade Folk Art Painting',
       'category': 'Paintings',
       'origin': 'Madhubani, Bihar',
       'price': 999,
       'originalPrice': 1999,
       'artisanShare': 'Artisan receives ₹750',
+      'artisanName': 'Mithila Craft Collective',
+      'artisanId': 'artisan_mithila_05',
       'imageUrl':
           'https://images.unsplash.com/photo-1579783900882-c0d3dad7b119?auto=format&fit=crop&w=600&q=80',
+      'description':
+          'Intricate Madhubani folk painting hand-drawn with bamboo twigs and natural mineral dyes depicting harmony in nature, fertility, and ancient folklore.',
     },
     {
+      'id': 'trending_shawl_06',
       'name': 'Handloom Tussar Silk Shawl',
       'category': 'Textiles',
       'origin': 'Bhagalpur, Bihar',
       'price': 1499,
       'originalPrice': 2999,
       'artisanShare': 'Artisan receives ₹1,150',
+      'artisanName': 'Bhagalpur Silk Weavers',
+      'artisanId': 'artisan_bhagalpur_06',
       'imageUrl':
           'https://utkalikaodisha.com/wp-content/uploads/2023/01/TRI3D__Smb_3__silk_set172_srijla_front__2023-1-4-13-27-43__1200X1200_11zon.jpg',
+      'description':
+          'Pure wild Tussar silk woven on traditional village pit-looms with organic slub textures and natural golden sheen. Hand-dyed using forest extracts.',
     },
   ];
 
@@ -1076,19 +1106,24 @@ class _CustomerHomeScreenState extends State<CustomerHomeScreen>
                   ),
                 ),
                 InkWell(
-                  onTap: () => setState(() => _selectedCategory = 'For You'),
-                  child: const Row(
-                    children: [
-                      Text(
-                        'View All',
-                        style: TextStyle(
-                          fontSize: 12,
-                          fontWeight: FontWeight.w800,
-                          color: _primaryTerracotta,
+                  onTap: () => Navigator.pushNamed(context, '/trending'),
+                  borderRadius: BorderRadius.circular(8),
+                  child: const Padding(
+                    padding: EdgeInsets.symmetric(vertical: 4, horizontal: 6),
+                    child: Row(
+                      children: [
+                        Text(
+                          'View All',
+                          style: TextStyle(
+                            fontSize: 12,
+                            fontWeight: FontWeight.w800,
+                            color: _primaryTerracotta,
+                          ),
                         ),
-                      ),
-                      Icon(Icons.arrow_forward_ios, size: 10, color: _primaryTerracotta),
-                    ],
+                        SizedBox(width: 3),
+                        Icon(Icons.arrow_forward_ios, size: 10, color: _primaryTerracotta),
+                      ],
+                    ),
                   ),
                 ),
               ],
@@ -1105,17 +1140,20 @@ class _CustomerHomeScreenState extends State<CustomerHomeScreen>
                 itemCount: _trendingItems.length,
                 separatorBuilder: (_, _) => const SizedBox(width: 10),
                 itemBuilder: (context, index) {
-                final item = _trendingItems[index];
-                return Container(
-                  width: 135,
-                  decoration: BoxDecoration(
-                    color: _pageBackground,
+                  final item = _trendingItems[index];
+                  return InkWell(
                     borderRadius: BorderRadius.circular(14),
-                    border: Border.all(color: _cardBorder),
-                  ),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
+                    onTap: () => _showTrendingItemDetails(item),
+                    child: Container(
+                      width: 135,
+                      decoration: BoxDecoration(
+                        color: _pageBackground,
+                        borderRadius: BorderRadius.circular(14),
+                        border: Border.all(color: _cardBorder),
+                      ),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
                       Expanded(
                         child: ClipRRect(
                           borderRadius: const BorderRadius.vertical(top: Radius.circular(13)),
@@ -1213,8 +1251,9 @@ class _CustomerHomeScreenState extends State<CustomerHomeScreen>
                       ),
                     ],
                   ),
-                );
-              },
+                ),
+              );
+            },
             ),
           ),
         ),
@@ -2143,6 +2182,386 @@ class _CustomerHomeScreenState extends State<CustomerHomeScreen>
         );
       },
     );
+  }
+
+  void _showTrendingItemDetails(Map<String, dynamic> item) {
+    final name = (item['name'] ?? 'Handcrafted Product').toString();
+    final category = (item['category'] ?? 'Handicraft').toString();
+    final origin = (item['origin'] ?? 'India').toString();
+    final artisanName = (item['artisanName'] ?? 'Master Artisan Studio').toString();
+    final description = (item['description'] ??
+        'Authentic Indian handcrafted item created using generational artisanal techniques directly from master craft clusters.')
+        .toString();
+    final price = _toDouble(item['price']);
+    final originalPrice = _toDouble(item['originalPrice']);
+    final artisanShare = (item['artisanShare'] ?? 'Artisan receives 80% directly').toString();
+    final imageUrl = (item['imageUrl'] ?? '').toString();
+
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.white,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(28)),
+      ),
+      builder: (context) {
+        return Container(
+          constraints: const BoxConstraints(maxHeight: 720),
+          child: SafeArea(
+            child: SingleChildScrollView(
+              padding: const EdgeInsets.fromLTRB(16, 12, 16, 24),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Center(
+                    child: Container(
+                      width: 40,
+                      height: 4,
+                      decoration: BoxDecoration(
+                        color: Colors.grey.shade300,
+                        borderRadius: BorderRadius.circular(10),
+                      ),
+                    ),
+                  ),
+                  const SizedBox(height: 14),
+                  _LargeProductImage(
+                    imageUrl: imageUrl,
+                    productName: name,
+                    category: category,
+                  ),
+                  const SizedBox(height: 16),
+                  Row(
+                    children: [
+                      Container(
+                        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                        decoration: BoxDecoration(
+                          color: _lightGoldWash,
+                          borderRadius: BorderRadius.circular(6),
+                          border: Border.all(color: _heirloomGold),
+                        ),
+                        child: const Row(
+                          children: [
+                            Icon(Icons.verified, size: 13, color: _primaryTerracotta),
+                            SizedBox(width: 4),
+                            Text(
+                              'Certified Authentic',
+                              style: TextStyle(
+                                fontSize: 10,
+                                fontWeight: FontWeight.w900,
+                                color: _primaryTerracotta,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                      const SizedBox(width: 8),
+                      Container(
+                        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                        decoration: BoxDecoration(
+                          color: _pageBackground,
+                          borderRadius: BorderRadius.circular(6),
+                        ),
+                        child: Text(
+                          category,
+                          style: const TextStyle(
+                            fontSize: 10,
+                            fontWeight: FontWeight.w700,
+                            color: _textSecondary,
+                          ),
+                        ),
+                      ),
+                      const Spacer(),
+                      Row(
+                        children: [
+                          const Icon(Icons.place_outlined, size: 14, color: _textSecondary),
+                          const SizedBox(width: 3),
+                          Text(
+                            origin,
+                            style: const TextStyle(
+                              fontSize: 11,
+                              fontWeight: FontWeight.w600,
+                              color: _textSecondary,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 10),
+                  Text(
+                    name,
+                    style: const TextStyle(
+                      fontSize: 20,
+                      fontWeight: FontWeight.w900,
+                      color: _textPrimary,
+                    ),
+                  ),
+                  const SizedBox(height: 8),
+                  Row(
+                    crossAxisAlignment: CrossAxisAlignment.baseline,
+                    textBaseline: TextBaseline.alphabetic,
+                    children: [
+                      Text(
+                        '₹${price.toStringAsFixed(0)}',
+                        style: const TextStyle(
+                          fontSize: 24,
+                          fontWeight: FontWeight.w900,
+                          color: _textPrimary,
+                        ),
+                      ),
+                      const SizedBox(width: 8),
+                      Text(
+                        '₹${originalPrice.toStringAsFixed(0)}',
+                        style: const TextStyle(
+                          fontSize: 14,
+                          decoration: TextDecoration.lineThrough,
+                          color: _textSecondary,
+                        ),
+                      ),
+                      const SizedBox(width: 8),
+                      Container(
+                        padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                        decoration: BoxDecoration(
+                          color: const Color(0xFFE8F5E9),
+                          borderRadius: BorderRadius.circular(4),
+                        ),
+                        child: const Text(
+                          'Direct Artisan Price',
+                          style: TextStyle(
+                            fontSize: 11,
+                            fontWeight: FontWeight.w900,
+                            color: _badgeGreen,
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 14),
+                  Container(
+                    padding: const EdgeInsets.all(12),
+                    decoration: BoxDecoration(
+                      color: const Color(0xFFF1F8F5),
+                      borderRadius: BorderRadius.circular(12),
+                      border: Border.all(color: const Color(0xFFC8E6D9)),
+                    ),
+                    child: Row(
+                      children: [
+                        const CircleAvatar(
+                          radius: 16,
+                          backgroundColor: Color(0xFFD3EEDF),
+                          child: Icon(Icons.handyman, color: _badgeGreen, size: 16),
+                        ),
+                        const SizedBox(width: 10),
+                        Expanded(
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text(
+                                artisanShare,
+                                style: const TextStyle(
+                                  fontSize: 12,
+                                  fontWeight: FontWeight.w900,
+                                  color: _badgeGreen,
+                                ),
+                              ),
+                              Text(
+                                'Studio: $artisanName • 100% fair pay',
+                                style: const TextStyle(fontSize: 10, color: _textSecondary),
+                              ),
+                            ],
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                  const SizedBox(height: 16),
+                  const Text(
+                    'Product Details',
+                    style: TextStyle(
+                      fontSize: 15,
+                      fontWeight: FontWeight.w800,
+                      color: _textPrimary,
+                    ),
+                  ),
+                  const SizedBox(height: 6),
+                  Text(
+                    description,
+                    style: const TextStyle(color: _textSecondary, height: 1.5, fontSize: 13),
+                  ),
+                  const SizedBox(height: 14),
+                  Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+                    decoration: BoxDecoration(
+                      color: const Color(0xFFFAF7F2),
+                      borderRadius: BorderRadius.circular(12),
+                      border: Border.all(color: _cardBorder),
+                    ),
+                    child: const Row(
+                      children: [
+                        Icon(Icons.verified_user_outlined, color: _primaryTerracotta, size: 20),
+                        SizedBox(width: 10),
+                        Expanded(
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text(
+                                '7-Day Easy Return & Replacement Guarantee',
+                                style: TextStyle(
+                                  fontSize: 12,
+                                  fontWeight: FontWeight.w800,
+                                  color: _textPrimary,
+                                ),
+                              ),
+                              SizedBox(height: 2),
+                              Text(
+                                'Doorstep reverse pickup • Replacement or full refund',
+                                style: TextStyle(fontSize: 10, color: _textSecondary),
+                              ),
+                            ],
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                  const SizedBox(height: 18),
+                  Row(
+                    children: [
+                      Expanded(
+                        child: OutlinedButton.icon(
+                          style: OutlinedButton.styleFrom(
+                            side: const BorderSide(color: _cardBorder),
+                            minimumSize: const Size(0, 48),
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(12),
+                            ),
+                          ),
+                          onPressed: () {
+                            Navigator.pop(context);
+                            _toggleTrendingWishlist(item);
+                          },
+                          icon: const Icon(Icons.favorite_border, color: _textPrimary),
+                          label: const Text('Wishlist', style: TextStyle(color: _textPrimary)),
+                        ),
+                      ),
+                      const SizedBox(width: 10),
+                      Expanded(
+                        flex: 2,
+                        child: ElevatedButton.icon(
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: _primaryTerracotta,
+                            foregroundColor: Colors.white,
+                            elevation: 0,
+                            minimumSize: const Size(0, 48),
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(12),
+                            ),
+                          ),
+                          onPressed: () {
+                            Navigator.pop(context);
+                            _addTrendingToCart(item);
+                          },
+                          icon: const Icon(Icons.shopping_bag_outlined, size: 18),
+                          label: const Text(
+                            'Add to Cart',
+                            style: TextStyle(fontSize: 14, fontWeight: FontWeight.w900),
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                ],
+              ),
+            ),
+          ),
+        );
+      },
+    );
+  }
+
+  Future<void> _addTrendingToCart(Map<String, dynamic> item) async {
+    final user = _user;
+    if (user == null) {
+      _showMessage('Please log in to add items to your cart.', isError: true);
+      return;
+    }
+
+    try {
+      final artisanId = (item['artisanId'] ?? 'artisan_jaipur_01').toString();
+      final productId = (item['id'] ?? 'product_${item['name'].hashCode}').toString();
+      final cartDocId = '${artisanId}_$productId';
+
+      final cartRef = FirebaseFirestore.instance
+          .collection('users')
+          .doc(user.uid)
+          .collection('cart')
+          .doc(cartDocId);
+
+      final existing = await cartRef.get();
+      if (existing.exists) {
+        final currentQty = _toInt(existing.data()?['quantity']);
+        await cartRef.update({
+          'quantity': currentQty + 1,
+          'updatedAt': FieldValue.serverTimestamp(),
+        });
+      } else {
+        await cartRef.set({
+          'productId': productId,
+          'artisanId': artisanId,
+          'name': item['name'] ?? 'Product',
+          'category': item['category'] ?? 'Handicraft',
+          'description': item['description'] ?? '',
+          'price': _toDouble(item['price']),
+          'imageUrl': item['imageUrl'] ?? '',
+          'quantity': 1,
+          'createdAt': FieldValue.serverTimestamp(),
+          'updatedAt': FieldValue.serverTimestamp(),
+        });
+      }
+
+      _showMessage('Added "${item['name']}" to Cart! 🛍️');
+    } catch (e) {
+      _showMessage('Could not add to cart.', isError: true);
+    }
+  }
+
+  Future<void> _toggleTrendingWishlist(Map<String, dynamic> item) async {
+    final user = _user;
+    if (user == null) {
+      _showMessage('Please log in to save items to your wishlist.', isError: true);
+      return;
+    }
+
+    try {
+      final artisanId = (item['artisanId'] ?? 'artisan_jaipur_01').toString();
+      final productId = (item['id'] ?? 'product_${item['name'].hashCode}').toString();
+      final wishlistDocId = '${artisanId}_$productId';
+
+      final wishlistRef = FirebaseFirestore.instance
+          .collection('users')
+          .doc(user.uid)
+          .collection('wishlist')
+          .doc(wishlistDocId);
+
+      final existing = await wishlistRef.get();
+      if (existing.exists) {
+        await wishlistRef.delete();
+        _showMessage('Removed from Wishlist.');
+      } else {
+        await wishlistRef.set({
+          'productId': productId,
+          'artisanId': artisanId,
+          'name': item['name'] ?? 'Product',
+          'category': item['category'] ?? 'Handicraft',
+          'description': item['description'] ?? '',
+          'price': _toDouble(item['price']),
+          'imageUrl': item['imageUrl'] ?? '',
+          'createdAt': FieldValue.serverTimestamp(),
+        });
+        _showMessage('Added to Wishlist ❤️');
+      }
+    } catch (e) {
+      _showMessage('Could not update wishlist.', isError: true);
+    }
   }
 
   Widget _buildEmptyState() {
