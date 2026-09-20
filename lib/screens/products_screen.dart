@@ -113,13 +113,17 @@ class _ProductImage extends StatelessWidget {
     final name = product.name.toLowerCase();
     final category = product.category.toLowerCase();
 
+    if (name.contains('shirt') ||
+        name.contains('kurta') ||
+        name.contains('dress') ||
+        category.contains('apparel')) {
+      return 'assets/images/heritage_shirt.png';
+    }
+
     if (name.contains('saree') ||
         name.contains('ikat') ||
         category.contains('textile')) {
       return 'https://utkalikaodisha.com/wp-content/uploads/2023/01/TRI3D__Smb_3__silk_set172_srijla_front__2023-1-4-13-27-43__1200X1200_11zon.jpg';
-    }
-    if (name.contains('kurta') || name.contains('dress')) {
-      return 'https://5.imimg.com/data5/ECOM/Default/2023/8/331186386/FZ/KN/HT/67173095/1690936764682-sku-3379-0-1000x1000.jpg';
     }
     if (name.contains('basket') || category.contains('bamboo')) {
       return 'https://images.unsplash.com/photo-1590874103328-eac38a683ce7?auto=format&fit=crop&w=500&q=82';
@@ -137,15 +141,30 @@ class _ProductImage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final url = _imageUrl;
     return ClipRRect(
       borderRadius: BorderRadius.circular(12),
-      child: Image.network(
-        _imageUrl,
-        width: 58,
-        height: 58,
-        fit: BoxFit.cover,
-        errorBuilder: (_, _, _) => _fallback(),
-      ),
+      child: url.startsWith('assets/')
+          ? Image.asset(
+              url,
+              width: 58,
+              height: 58,
+              fit: BoxFit.cover,
+              errorBuilder: (_, _, _) => Image.network(
+                'https://heritrace.web.app/assets/images/heritage_shirt.png',
+                width: 58,
+                height: 58,
+                fit: BoxFit.cover,
+                errorBuilder: (_, _, _) => _fallback(),
+              ),
+            )
+          : Image.network(
+              url,
+              width: 58,
+              height: 58,
+              fit: BoxFit.cover,
+              errorBuilder: (_, _, _) => _fallback(),
+            ),
     );
   }
 

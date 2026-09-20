@@ -68,6 +68,15 @@ class _CustomerHomeScreenState extends State<CustomerHomeScreen>
 
   final List<Map<String, dynamic>> _heroBanners = [
     {
+      'tag': 'HERITAGE ARTISAN SHIRT',
+      'title': 'Handblock Heritage Resort Shirt',
+      'subtitle': 'Vibrant traditional lotus motifs printed on pure breathable cotton.',
+      'artisan': 'Jaipur Handblock Artisans, Rajasthan',
+      'price': '₹1,499',
+      'badge': '100% Breathable Cotton',
+      'imageUrl': 'assets/images/heritage_shirt.png',
+    },
+    {
       'tag': '100% CERTIFIED HANDLOOM',
       'title': 'Pure Silk Handloom Saree',
       'subtitle': 'Woven on traditional wooden pit looms with authentic gold zari patterns.',
@@ -100,6 +109,15 @@ class _CustomerHomeScreenState extends State<CustomerHomeScreen>
   ];
 
   final List<Map<String, dynamic>> _trendingItems = [
+    {
+      'name': 'Heritage Printed Resort Shirt',
+      'category': 'Textiles',
+      'origin': 'Jaipur, Rajasthan',
+      'price': 1499,
+      'originalPrice': 2499,
+      'artisanShare': 'Artisan receives ₹1,100',
+      'imageUrl': 'assets/images/heritage_shirt.png',
+    },
     {
       'name': 'Carved Walnut Wood Box',
       'category': 'Woodcraft',
@@ -786,11 +804,20 @@ class _CustomerHomeScreenState extends State<CustomerHomeScreen>
                     child: Stack(
                       children: [
                         Positioned.fill(
-                          child: Image.network(
-                            banner['imageUrl'] as String,
-                            fit: BoxFit.cover,
-                            errorBuilder: (_, _, _) => Container(color: Colors.grey.shade300),
-                          ),
+                          child: (banner['imageUrl'] as String).startsWith('assets/')
+                              ? Image.asset(
+                                  banner['imageUrl'] as String,
+                                  fit: BoxFit.cover,
+                                  errorBuilder: (_, _, _) => Image.network(
+                                    'https://heritrace.web.app/assets/images/heritage_shirt.png',
+                                    fit: BoxFit.cover,
+                                  ),
+                                )
+                              : Image.network(
+                                  banner['imageUrl'] as String,
+                                  fit: BoxFit.cover,
+                                  errorBuilder: (_, _, _) => Container(color: Colors.grey.shade300),
+                                ),
                         ),
                         Positioned.fill(
                           child: DecoratedBox(
@@ -1060,11 +1087,20 @@ class _CustomerHomeScreenState extends State<CustomerHomeScreen>
                           child: Stack(
                             children: [
                               Positioned.fill(
-                                child: Image.network(
-                                  item['imageUrl'] as String,
-                                  fit: BoxFit.cover,
-                                  errorBuilder: (_, _, _) => Container(color: Colors.grey.shade200),
-                                ),
+                                child: (item['imageUrl'] as String).startsWith('assets/')
+                                    ? Image.asset(
+                                        item['imageUrl'] as String,
+                                        fit: BoxFit.cover,
+                                        errorBuilder: (_, _, _) => Image.network(
+                                          'https://heritrace.web.app/assets/images/heritage_shirt.png',
+                                          fit: BoxFit.cover,
+                                        ),
+                                      )
+                                    : Image.network(
+                                        item['imageUrl'] as String,
+                                        fit: BoxFit.cover,
+                                        errorBuilder: (_, _, _) => Container(color: Colors.grey.shade200),
+                                      ),
                               ),
                               Positioned(
                                 top: 5,
@@ -2397,13 +2433,15 @@ class _ProductImage extends StatelessWidget {
   String get _fallbackUrl {
     final name = productName.toLowerCase();
     final type = category.toLowerCase();
+    if (name.contains('shirt') ||
+        name.contains('kurta') ||
+        name.contains('dress')) {
+      return 'assets/images/heritage_shirt.png';
+    }
     if (name.contains('saree') ||
         name.contains('ikat') ||
         type.contains('textile')) {
       return 'https://utkalikaodisha.com/wp-content/uploads/2023/01/TRI3D__Smb_3__silk_set172_srijla_front__2023-1-4-13-27-43__1200X1200_11zon.jpg';
-    }
-    if (name.contains('kurta') || name.contains('dress')) {
-      return 'https://5.imimg.com/data5/ECOM/Default/2023/8/331186386/FZ/KN/HT/67173095/1690936764682-sku-3379-0-1000x1000.jpg';
     }
     if (name.contains('basket') ||
         type.contains('bamboo') ||
@@ -2420,13 +2458,30 @@ class _ProductImage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final effectiveUrl = imageUrl.isNotEmpty ? imageUrl : _fallbackUrl;
+    if (effectiveUrl.startsWith('assets/')) {
+      return Image.asset(
+        effectiveUrl,
+        fit: BoxFit.cover,
+        width: double.infinity,
+        height: double.infinity,
+        errorBuilder: (_, _, _) => Image.network(
+          'https://heritrace.web.app/assets/images/heritage_shirt.png',
+          fit: BoxFit.cover,
+        ),
+      );
+    }
     return Image.network(
-      imageUrl.isNotEmpty ? imageUrl : _fallbackUrl,
+      effectiveUrl,
       fit: BoxFit.cover,
       width: double.infinity,
       height: double.infinity,
       errorBuilder: (_, _, _) {
-        return Image.network(_fallbackUrl, fit: BoxFit.cover);
+        final fallback = _fallbackUrl;
+        if (fallback.startsWith('assets/')) {
+          return Image.asset(fallback, fit: BoxFit.cover);
+        }
+        return Image.network(fallback, fit: BoxFit.cover);
       },
       loadingBuilder: (context, child, loadingProgress) {
         if (loadingProgress == null) return child;

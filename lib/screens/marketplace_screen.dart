@@ -34,13 +34,17 @@ class _MarketplaceScreenState extends State<MarketplaceScreen> {
       return storedUrl;
     }
 
+    if (name.contains('shirt') ||
+        name.contains('kurta') ||
+        name.contains('dress') ||
+        category.contains('apparel')) {
+      return 'assets/images/heritage_shirt.png';
+    }
+
     if (name.contains('saree') ||
         name.contains('ikat') ||
         category.contains('textile')) {
       return 'https://utkalikaodisha.com/wp-content/uploads/2023/01/TRI3D__Smb_3__silk_set172_srijla_front__2023-1-4-13-27-43__1200X1200_11zon.jpg';
-    }
-    if (name.contains('kurta') || name.contains('dress')) {
-      return 'https://5.imimg.com/data5/ECOM/Default/2023/8/331186386/FZ/KN/HT/67173095/1690936764682-sku-3379-0-1000x1000.jpg';
     }
     if (name.contains('basket') || category.contains('bamboo')) {
       return 'https://images.unsplash.com/photo-1590874103328-eac38a683ce7?auto=format&fit=crop&w=900&q=82';
@@ -78,14 +82,15 @@ class _MarketplaceScreenState extends State<MarketplaceScreen> {
       'verified': true,
     },
     {
-      'name': 'Sambalpuri Everyday Kurta',
-      'category': 'Textiles',
+      'name': 'Heritage Printed Resort Shirt',
+      'category': 'Apparel',
+      'imageUrl': 'assets/images/heritage_shirt.png',
       'description':
-          'A comfortable handloom kurta carrying the rhythm of Odisha motifs.',
-      'price': 1299,
+          'Premium resort-collar heritage shirt featuring authentic handblock lotus motifs and artisanal borders.',
+      'price': 1499,
       'origin': 'Bargarh, Odisha',
-      'material': 'Handloom cotton',
-      'technique': 'Traditional loom weaving',
+      'material': 'Handblock cotton',
+      'technique': 'Block printing & tailoring',
       'tradition': 'Sambalpuri textile craft',
       'verified': true,
     },
@@ -698,6 +703,72 @@ class _MarketplaceScreenState extends State<MarketplaceScreen> {
     );
   }
 
+  static Widget buildImage(
+    String url, {
+    BoxFit fit = BoxFit.cover,
+    double? width,
+    double? height,
+    Widget? fallbackWidget,
+    String? fallbackUrl,
+  }) {
+    if (url.startsWith('assets/')) {
+      return Image.asset(
+        url,
+        fit: fit,
+        width: width,
+        height: height,
+        errorBuilder: (_, _, _) => Image.network(
+          'https://heritrace.web.app/assets/images/heritage_shirt.png',
+          fit: fit,
+          width: width,
+          height: height,
+          errorBuilder: (_, _, _) =>
+              fallbackWidget ??
+              Container(
+                width: width,
+                height: height,
+                color: const Color(0xFF21463B),
+                child: const Icon(
+                  Icons.broken_image_outlined,
+                  size: 40,
+                  color: _accent,
+                ),
+              ),
+        ),
+      );
+    }
+    return Image.network(
+      url,
+      fit: fit,
+      width: width,
+      height: height,
+      errorBuilder: (_, _, _) {
+        if (fallbackUrl != null &&
+            fallbackUrl.isNotEmpty &&
+            fallbackUrl != url) {
+          return buildImage(
+            fallbackUrl,
+            fit: fit,
+            width: width,
+            height: height,
+            fallbackWidget: fallbackWidget,
+          );
+        }
+        return fallbackWidget ??
+            Container(
+              width: width,
+              height: height,
+              color: const Color(0xFF21463B),
+              child: const Icon(
+                Icons.broken_image_outlined,
+                size: 40,
+                color: _accent,
+              ),
+            );
+      },
+    );
+  }
+
   Widget _detailImage(String imageUrl, Map<String, dynamic> data) {
     if (imageUrl.isEmpty) {
       return Container(
@@ -711,26 +782,16 @@ class _MarketplaceScreenState extends State<MarketplaceScreen> {
       );
     }
 
+    final fallbackUrl = _imageForProduct(data, ignoreStoredUrl: true);
     return ClipRRect(
       borderRadius: BorderRadius.circular(22),
-      child: Image.network(
+      child: buildImage(
         imageUrl,
         width: double.infinity,
         height: 230,
         fit: BoxFit.cover,
-        errorBuilder: (_, _, _) {
-          final fallbackUrl = _imageForProduct(data, ignoreStoredUrl: true);
-          if (fallbackUrl != imageUrl) {
-            return Image.network(
-              fallbackUrl,
-              width: double.infinity,
-              height: 230,
-              fit: BoxFit.cover,
-              errorBuilder: (_, _, _) => _brokenDetailImage(),
-            );
-          }
-          return _brokenDetailImage();
-        },
+        fallbackUrl: fallbackUrl,
+        fallbackWidget: _brokenDetailImage(),
       ),
     );
   }
@@ -931,23 +992,15 @@ class _ProductCard extends StatelessWidget {
   }
 
   Widget _productImage(String imageUrl, Map<String, dynamic> data) {
-    return Image.network(
+    final fallbackUrl = _MarketplaceScreenState._imageForProduct(
+      data,
+      ignoreStoredUrl: true,
+    );
+    return _MarketplaceScreenState.buildImage(
       imageUrl,
       fit: BoxFit.cover,
-      errorBuilder: (_, _, _) {
-        final fallbackUrl = _MarketplaceScreenState._imageForProduct(
-          data,
-          ignoreStoredUrl: true,
-        );
-        if (fallbackUrl != imageUrl) {
-          return Image.network(
-            fallbackUrl,
-            fit: BoxFit.cover,
-            errorBuilder: (_, _, _) => _brokenImage(),
-          );
-        }
-        return _brokenImage();
-      },
+      fallbackUrl: fallbackUrl,
+      fallbackWidget: _brokenImage(),
     );
   }
 
@@ -1184,23 +1237,15 @@ class _ProductCard extends StatelessWidget {
   }
 
   Widget _productImage(String imageUrl, Map<String, dynamic> data) {
-    return Image.network(
+    final fallbackUrl = _MarketplaceScreenState._imageForProduct(
+      data,
+      ignoreStoredUrl: true,
+    );
+    return _MarketplaceScreenState.buildImage(
       imageUrl,
       fit: BoxFit.cover,
-      errorBuilder: (_, _, _) {
-        final fallbackUrl = _MarketplaceScreenState._imageForProduct(
-          data,
-          ignoreStoredUrl: true,
-        );
-        if (fallbackUrl != imageUrl) {
-          return Image.network(
-            fallbackUrl,
-            fit: BoxFit.cover,
-            errorBuilder: (_, _, _) => _brokenImage(),
-          );
-        }
-        return _brokenImage();
-      },
+      fallbackUrl: fallbackUrl,
+      fallbackWidget: _brokenImage(),
     );
   }
 

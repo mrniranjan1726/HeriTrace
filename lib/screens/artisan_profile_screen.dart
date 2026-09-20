@@ -1284,16 +1284,27 @@ class _ArtisanProfileScreenState extends State<ArtisanProfileScreen> {
                 width: 90,
                 height: 90,
 
-                child: imageUrl.isNotEmpty
-                    ? Image.network(
-                        imageUrl,
-                        fit: BoxFit.cover,
-
-                        errorBuilder: (context, error, stackTrace) {
-                          return _imagePlaceholder();
-                        },
-                      )
-                    : _imagePlaceholder(),
+                child: imageUrl.isEmpty
+                    ? _imagePlaceholder()
+                    : imageUrl.startsWith('assets/')
+                        ? Image.asset(
+                            imageUrl,
+                            fit: BoxFit.cover,
+                            errorBuilder: (context, error, stackTrace) =>
+                                Image.network(
+                              'https://heritrace.web.app/assets/images/heritage_shirt.png',
+                              fit: BoxFit.cover,
+                              errorBuilder: (context, error, stackTrace) =>
+                                  _imagePlaceholder(),
+                            ),
+                          )
+                        : Image.network(
+                            imageUrl,
+                            fit: BoxFit.cover,
+                            errorBuilder: (context, error, stackTrace) {
+                              return _imagePlaceholder();
+                            },
+                          ),
               ),
             ),
 
@@ -1393,13 +1404,16 @@ class _ArtisanProfileScreenState extends State<ArtisanProfileScreen> {
 
     final name = (data['name'] ?? '').toString().toLowerCase();
     final category = (data['category'] ?? '').toString().toLowerCase();
+    if (name.contains('shirt') ||
+        name.contains('kurta') ||
+        name.contains('dress') ||
+        category.contains('apparel')) {
+      return 'assets/images/heritage_shirt.png';
+    }
     if (name.contains('saree') ||
         name.contains('ikat') ||
         category.contains('textile')) {
       return 'https://utkalikaodisha.com/wp-content/uploads/2023/01/TRI3D__Smb_3__silk_set172_srijla_front__2023-1-4-13-27-43__1200X1200_11zon.jpg';
-    }
-    if (name.contains('kurta') || name.contains('dress')) {
-      return 'https://5.imimg.com/data5/ECOM/Default/2023/8/331186386/FZ/KN/HT/67173095/1690936764682-sku-3379-0-1000x1000.jpg';
     }
     if (name.contains('basket') || category.contains('bamboo')) {
       return 'https://images.unsplash.com/photo-1590874103328-eac38a683ce7?auto=format&fit=crop&w=500&q=80';

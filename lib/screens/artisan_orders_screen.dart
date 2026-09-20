@@ -745,19 +745,35 @@ class _OrderProduct extends StatelessWidget {
                         color: Color(0xFFA24B2A),
                       ),
                     )
-                  : Image.network(
-                      imageUrl,
-                      fit: BoxFit.cover,
-                      errorBuilder: (_, _, _) {
-                        return Container(
-                          color: const Color(0xFFF2E6DA),
-                          child: const Icon(
-                            Icons.image_not_supported_outlined,
-                            color: Color(0xFFA24B2A),
+                  : imageUrl.startsWith('assets/')
+                      ? Image.asset(
+                          imageUrl,
+                          fit: BoxFit.cover,
+                          errorBuilder: (_, _, _) => Image.network(
+                            'https://heritrace.web.app/assets/images/heritage_shirt.png',
+                            fit: BoxFit.cover,
+                            errorBuilder: (_, _, _) => Container(
+                              color: const Color(0xFFF2E6DA),
+                              child: const Icon(
+                                Icons.image_not_supported_outlined,
+                                color: Color(0xFFA24B2A),
+                              ),
+                            ),
                           ),
-                        );
-                      },
-                    ),
+                        )
+                      : Image.network(
+                          imageUrl,
+                          fit: BoxFit.cover,
+                          errorBuilder: (_, _, _) {
+                            return Container(
+                              color: const Color(0xFFF2E6DA),
+                              child: const Icon(
+                                Icons.image_not_supported_outlined,
+                                color: Color(0xFFA24B2A),
+                              ),
+                            );
+                          },
+                        ),
             ),
           ),
 

@@ -1083,11 +1083,14 @@ class _ProductImage extends StatelessWidget {
   String get _fallbackUrl {
     final name = productName.toLowerCase();
     final type = category.toLowerCase();
+    if (name.contains('shirt') ||
+        name.contains('kurta') ||
+        name.contains('dress') ||
+        type.contains('apparel')) {
+      return 'assets/images/heritage_shirt.png';
+    }
     if (name.contains('saree') || name.contains('ikat')) {
       return 'https://utkalikaodisha.com/wp-content/uploads/2023/01/TRI3D__Smb_3__silk_set172_srijla_front__2023-1-4-13-27-43__1200X1200_11zon.jpg';
-    }
-    if (name.contains('kurta') || name.contains('dress')) {
-      return 'https://5.imimg.com/data5/ECOM/Default/2023/8/331186386/FZ/KN/HT/67173095/1690936764682-sku-3379-0-1000x1000.jpg';
     }
     if (name.contains('basket') || type.contains('bamboo')) {
       return 'https://images.unsplash.com/photo-1590874103328-eac38a683ce7?auto=format&fit=crop&w=900&q=82';
@@ -1098,8 +1101,47 @@ class _ProductImage extends StatelessWidget {
     return 'https://images.unsplash.com/photo-1616486338812-3dadae4b4ace?auto=format&fit=crop&w=900&q=82';
   }
 
+  Widget _buildImage(String url) {
+    if (url.startsWith('assets/')) {
+      return Image.asset(
+        url,
+        fit: BoxFit.cover,
+        errorBuilder: (_, _, _) => Image.network(
+          'https://heritrace.web.app/assets/images/heritage_shirt.png',
+          fit: BoxFit.cover,
+          errorBuilder: (_, _, _) =>
+              const Icon(Icons.image_not_supported_outlined, size: 35),
+        ),
+      );
+    }
+    return Image.network(
+      url,
+      fit: BoxFit.cover,
+      errorBuilder: (_, _, _) {
+        if (_fallbackUrl.startsWith('assets/')) {
+          return Image.asset(
+            _fallbackUrl,
+            fit: BoxFit.cover,
+            errorBuilder: (_, _, _) =>
+                const Icon(Icons.image_not_supported_outlined, size: 35),
+          );
+        }
+        return Image.network(
+          _fallbackUrl,
+          fit: BoxFit.cover,
+          errorBuilder: (_, _, _) =>
+              const Icon(Icons.image_not_supported_outlined, size: 35),
+        );
+      },
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
+    final targetUrl = (imageUrl != null && imageUrl!.isNotEmpty)
+        ? imageUrl!
+        : _fallbackUrl;
+
     return Container(
       width: 100,
       height: 100,
@@ -1108,16 +1150,7 @@ class _ProductImage extends StatelessWidget {
         color: Colors.grey.shade100,
       ),
       clipBehavior: Clip.antiAlias,
-      child: Image.network(
-        imageUrl != null && imageUrl!.isNotEmpty ? imageUrl! : _fallbackUrl,
-        fit: BoxFit.cover,
-        errorBuilder: (_, _, _) => Image.network(
-          _fallbackUrl,
-          fit: BoxFit.cover,
-          errorBuilder: (_, _, _) =>
-              const Icon(Icons.image_not_supported_outlined, size: 35),
-        ),
-      ),
+      child: _buildImage(targetUrl),
     );
   }
 }

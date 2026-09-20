@@ -782,23 +782,45 @@ class _ProductImage extends StatelessWidget {
 
     return ClipRRect(
       borderRadius: BorderRadius.circular(13),
-      child: Image.network(
-        imageUrl,
-        width: 64,
-        height: 64,
-        fit: BoxFit.cover,
-        errorBuilder: (_, _, _) {
-          return Container(
-            width: 64,
-            height: 64,
-            color: const Color(0xFFF2E6DA),
-            child: const Icon(
-              Icons.image_not_supported_outlined,
-              color: Color(0xFF7A2012),
+      child: imageUrl.startsWith('assets/')
+          ? Image.asset(
+              imageUrl,
+              width: 64,
+              height: 64,
+              fit: BoxFit.cover,
+              errorBuilder: (_, _, _) => Image.network(
+                'https://heritrace.web.app/assets/images/heritage_shirt.png',
+                width: 64,
+                height: 64,
+                fit: BoxFit.cover,
+                errorBuilder: (_, _, _) => Container(
+                  width: 64,
+                  height: 64,
+                  color: const Color(0xFFF2E6DA),
+                  child: const Icon(
+                    Icons.image_not_supported_outlined,
+                    color: Color(0xFF7A2012),
+                  ),
+                ),
+              ),
+            )
+          : Image.network(
+              imageUrl,
+              width: 64,
+              height: 64,
+              fit: BoxFit.cover,
+              errorBuilder: (_, _, _) {
+                return Container(
+                  width: 64,
+                  height: 64,
+                  color: const Color(0xFFF2E6DA),
+                  child: const Icon(
+                    Icons.image_not_supported_outlined,
+                    color: Color(0xFF7A2012),
+                  ),
+                );
+              },
             ),
-          );
-        },
-      ),
     );
   }
 }
