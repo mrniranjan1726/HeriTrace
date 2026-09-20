@@ -2051,7 +2051,46 @@ class _CustomerHomeScreenState extends State<CustomerHomeScreen>
                         : description,
                     style: const TextStyle(color: _textSecondary, height: 1.5, fontSize: 13),
                   ),
-                  const SizedBox(height: 22),
+                  const SizedBox(height: 14),
+                  Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+                    decoration: BoxDecoration(
+                      color: const Color(0xFFFAF7F2),
+                      borderRadius: BorderRadius.circular(12),
+                      border: Border.all(color: _cardBorder),
+                    ),
+                    child: const Row(
+                      children: [
+                        Icon(
+                          Icons.verified_user_outlined,
+                          color: _primaryTerracotta,
+                          size: 20,
+                        ),
+                        SizedBox(width: 10),
+                        Expanded(
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text(
+                                '7-Day Easy Return & Replacement Guarantee',
+                                style: TextStyle(
+                                  fontSize: 12,
+                                  fontWeight: FontWeight.w800,
+                                  color: _textPrimary,
+                                ),
+                              ),
+                              SizedBox(height: 2),
+                              Text(
+                                'Doorstep reverse pickup • Replacement or full refund',
+                                style: TextStyle(fontSize: 10, color: _textSecondary),
+                              ),
+                            ],
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                  const SizedBox(height: 18),
                   Row(
                     children: [
                       Expanded(

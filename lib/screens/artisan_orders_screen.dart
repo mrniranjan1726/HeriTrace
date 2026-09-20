@@ -133,6 +133,11 @@ class _ArtisanOrderCard extends StatelessWidget {
 
     final status = (data['status'] ?? 'pending').toString().toLowerCase();
 
+    final returnStatus = data['returnStatus']?.toString();
+    final returnType = (data['returnType'] ?? 'return').toString();
+    final returnReason = (data['returnReason'] ?? '').toString();
+    final returnNotes = (data['returnNotes'] ?? '').toString();
+
     final items = _artisanItems();
 
     final artisanTotal = _calculateTotal(items);
@@ -193,7 +198,11 @@ class _ArtisanOrderCard extends StatelessWidget {
                     ),
                   ),
 
-                  _StatusBadge(status: status),
+                  _StatusBadge(
+                    status: status,
+                    returnStatus: returnStatus,
+                    returnType: returnType,
+                  ),
                 ],
               ),
 
@@ -252,6 +261,83 @@ class _ArtisanOrderCard extends StatelessWidget {
                       style: const TextStyle(fontSize: 13, color: Colors.grey),
                     ),
                   ],
+                ),
+              ],
+
+              if (returnStatus != null) ...[
+                const SizedBox(height: 12),
+                Container(
+                  padding: const EdgeInsets.all(12),
+                  decoration: BoxDecoration(
+                    color: const Color(0xFFFFF8EC),
+                    borderRadius: BorderRadius.circular(14),
+                    border: Border.all(color: const Color(0xFFF0D5B5)),
+                  ),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Row(
+                        children: [
+                          Icon(
+                            returnType == 'exchange'
+                                ? Icons.swap_horiz_rounded
+                                : returnType == 'replace'
+                                    ? Icons.replay_rounded
+                                    : Icons.assignment_return_outlined,
+                            size: 17,
+                            color: const Color(0xFF9A5B00),
+                          ),
+                          const SizedBox(width: 8),
+                          Expanded(
+                            child: Text(
+                              'Customer Request: ${returnType == 'exchange' ? 'Exchange' : returnType == 'replace' ? 'Replacement' : 'Return & Refund'}',
+                              style: const TextStyle(
+                                fontWeight: FontWeight.w800,
+                                fontSize: 13,
+                                color: Color(0xFF7A4500),
+                              ),
+                            ),
+                          ),
+                          Container(
+                            padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+                            decoration: BoxDecoration(
+                              color: const Color(0xFFFBE4C4),
+                              borderRadius: BorderRadius.circular(8),
+                            ),
+                            child: Text(
+                              returnStatus.toUpperCase(),
+                              style: const TextStyle(
+                                fontSize: 10,
+                                fontWeight: FontWeight.w800,
+                                color: Color(0xFF7A4500),
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
+                      if (returnReason.isNotEmpty) ...[
+                        const SizedBox(height: 5),
+                        Text(
+                          'Reason: $returnReason',
+                          style: const TextStyle(
+                            fontSize: 12,
+                            color: Color(0xFF5C3700),
+                            fontWeight: FontWeight.w600,
+                          ),
+                        ),
+                      ],
+                      if (returnNotes.isNotEmpty) ...[
+                        const SizedBox(height: 3),
+                        Text(
+                          'Notes: $returnNotes',
+                          style: const TextStyle(
+                            fontSize: 11.5,
+                            color: Color(0xFF6B4208),
+                          ),
+                        ),
+                      ],
+                    ],
+                  ),
                 ),
               ],
 
@@ -397,6 +483,11 @@ class _ArtisanOrderCard extends StatelessWidget {
 
     final total = _calculateTotal(items);
 
+    final returnStatus = data['returnStatus']?.toString();
+    final returnType = (data['returnType'] ?? 'return').toString();
+    final returnReason = (data['returnReason'] ?? '').toString();
+    final returnNotes = (data['returnNotes'] ?? '').toString();
+
     showModalBottomSheet(
       context: context,
       isScrollControlled: true,
@@ -442,7 +533,11 @@ class _ArtisanOrderCard extends StatelessWidget {
                               ),
                             ),
                           ),
-                          _StatusBadge(status: selectedStatus),
+                          _StatusBadge(
+                            status: selectedStatus,
+                            returnStatus: returnStatus,
+                            returnType: returnType,
+                          ),
                         ],
                       ),
 
@@ -493,6 +588,127 @@ class _ArtisanOrderCard extends StatelessWidget {
                           ],
                         ),
                       ),
+
+                      if (returnStatus != null) ...[
+                        const SizedBox(height: 12),
+                        Container(
+                          padding: const EdgeInsets.all(12),
+                          decoration: BoxDecoration(
+                            color: const Color(0xFFFFF8EC),
+                            borderRadius: BorderRadius.circular(14),
+                            border: Border.all(color: const Color(0xFFF0D5B5)),
+                          ),
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Row(
+                                children: [
+                                  Icon(
+                                    returnType == 'exchange'
+                                        ? Icons.swap_horiz_rounded
+                                        : returnType == 'replace'
+                                            ? Icons.replay_rounded
+                                            : Icons.assignment_return_outlined,
+                                    size: 17,
+                                    color: const Color(0xFF9A5B00),
+                                  ),
+                                  const SizedBox(width: 8),
+                                  Expanded(
+                                    child: Text(
+                                      'Customer ${returnType == 'exchange' ? 'Exchange' : returnType == 'replace' ? 'Replacement' : 'Return'} Request',
+                                      style: const TextStyle(
+                                        fontSize: 13.5,
+                                        fontWeight: FontWeight.w800,
+                                        color: Color(0xFF7A4500),
+                                      ),
+                                    ),
+                                  ),
+                                ],
+                              ),
+                              if (returnReason.isNotEmpty) ...[
+                                const SizedBox(height: 4),
+                                Text(
+                                  'Reason: $returnReason',
+                                  style: const TextStyle(
+                                    fontSize: 12,
+                                    fontWeight: FontWeight.w600,
+                                    color: Color(0xFF5C3700),
+                                  ),
+                                ),
+                              ],
+                              if (returnNotes.isNotEmpty) ...[
+                                const SizedBox(height: 2),
+                                Text(
+                                  'Notes: $returnNotes',
+                                  style: const TextStyle(
+                                    fontSize: 11.5,
+                                    color: Color(0xFF6B4208),
+                                  ),
+                                ),
+                              ],
+                              const SizedBox(height: 8),
+                              Wrap(
+                                spacing: 8,
+                                runSpacing: 6,
+                                children: [
+                                  if (returnStatus == 'requested') ...[
+                                    FilledButton.icon(
+                                      style: FilledButton.styleFrom(
+                                        backgroundColor: const Color(0xFF1E5638),
+                                        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+                                        minimumSize: Size.zero,
+                                        tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                                      ),
+                                      onPressed: () => _updateReturnStatus(context, 'approved'),
+                                      icon: const Icon(Icons.check, size: 14),
+                                      label: const Text('Approve Request', style: TextStyle(fontSize: 11.5)),
+                                    ),
+                                    OutlinedButton.icon(
+                                      style: OutlinedButton.styleFrom(
+                                        foregroundColor: Colors.redAccent,
+                                        side: const BorderSide(color: Colors.redAccent),
+                                        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+                                        minimumSize: Size.zero,
+                                        tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                                      ),
+                                      onPressed: () => _updateReturnStatus(context, 'declined'),
+                                      icon: const Icon(Icons.close, size: 14),
+                                      label: const Text('Decline', style: TextStyle(fontSize: 11.5)),
+                                    ),
+                                  ] else if (returnStatus == 'approved') ...[
+                                    FilledButton.icon(
+                                      style: FilledButton.styleFrom(
+                                        backgroundColor: const Color(0xFF1976D2),
+                                        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+                                        minimumSize: Size.zero,
+                                        tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                                      ),
+                                      onPressed: () => _updateReturnStatus(context, 'picked_up'),
+                                      icon: const Icon(Icons.inventory_2_outlined, size: 14),
+                                      label: const Text('Mark Reverse Picked Up', style: TextStyle(fontSize: 11.5)),
+                                    ),
+                                  ] else if (returnStatus == 'picked_up') ...[
+                                    FilledButton.icon(
+                                      style: FilledButton.styleFrom(
+                                        backgroundColor: const Color(0xFF1E5638),
+                                        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+                                        minimumSize: Size.zero,
+                                        tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                                      ),
+                                      onPressed: () => _updateReturnStatus(context, 'completed'),
+                                      icon: const Icon(Icons.done_all, size: 14),
+                                      label: Text(
+                                        returnType == 'return' ? 'Complete Refund' : 'Complete Dispatch',
+                                        style: const TextStyle(fontSize: 11.5),
+                                      ),
+                                    ),
+                                  ],
+                                ],
+                              ),
+                            ],
+                          ),
+                        ),
+                      ],
 
                       const SizedBox(height: 18),
 
@@ -631,6 +847,41 @@ class _ArtisanOrderCard extends StatelessWidget {
         );
       },
     );
+  }
+
+  Future<void> _updateReturnStatus(BuildContext context, String newStatus) async {
+    try {
+      await document.reference.update({
+        'returnStatus': newStatus,
+        'returnUpdatedAt': FieldValue.serverTimestamp(),
+      });
+
+      if (context.mounted) {
+        Navigator.pop(context);
+
+        ScaffoldMessenger.of(context)
+          ..hideCurrentSnackBar()
+          ..showSnackBar(
+            SnackBar(
+              content: Text('Return request updated to ${newStatus.replaceAll('_', ' ')}.'),
+              backgroundColor: const Color(0xFFA24B2A),
+              behavior: SnackBarBehavior.floating,
+            ),
+          );
+      }
+    } catch (e) {
+      if (context.mounted) {
+        ScaffoldMessenger.of(context)
+          ..hideCurrentSnackBar()
+          ..showSnackBar(
+            SnackBar(
+              content: Text('Could not update return status: $e'),
+              backgroundColor: Colors.red,
+              behavior: SnackBarBehavior.floating,
+            ),
+          );
+      }
+    }
   }
 
   String _validStatus(String status) {
@@ -845,8 +1096,14 @@ class _OrderProduct extends StatelessWidget {
 
 class _StatusBadge extends StatelessWidget {
   final String status;
+  final String? returnStatus;
+  final String? returnType;
 
-  const _StatusBadge({required this.status});
+  const _StatusBadge({
+    required this.status,
+    this.returnStatus,
+    this.returnType,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -855,48 +1112,95 @@ class _StatusBadge extends StatelessWidget {
     IconData icon;
     String label;
 
-    switch (status) {
-      case 'confirmed':
-        background = const Color(0xFFE7F5EC);
-        foreground = const Color(0xFF237A43);
-        icon = Icons.check_circle_outline;
-        label = 'Confirmed';
-        break;
+    if (returnStatus != null) {
+      final type = returnType ?? 'return';
+      final typeName = type == 'exchange'
+          ? 'Exchange'
+          : type == 'replace'
+              ? 'Replacement'
+              : 'Return';
 
-      case 'processing':
-        background = const Color(0xFFFFF3DC);
-        foreground = const Color(0xFF9A6700);
-        icon = Icons.sync;
-        label = 'Processing';
-        break;
+      switch (returnStatus) {
+        case 'requested':
+          background = const Color(0xFFFFF3DC);
+          foreground = const Color(0xFF9A6700);
+          icon = Icons.sync;
+          label = '$typeName Requested';
+          break;
+        case 'approved':
+          background = const Color(0xFFE8F0FF);
+          foreground = const Color(0xFF1976D2);
+          icon = Icons.local_shipping_outlined;
+          label = '$typeName Approved';
+          break;
+        case 'picked_up':
+          background = const Color(0xFFEDE7F6);
+          foreground = const Color(0xFF5E35B1);
+          icon = Icons.inventory_2_outlined;
+          label = '$typeName Picked Up';
+          break;
+        case 'completed':
+          background = const Color(0xFFE6F5ED);
+          foreground = const Color(0xFF217548);
+          icon = Icons.check_circle_outline;
+          label = type == 'return' ? 'Refund Credited' : '$typeName Completed';
+          break;
+        case 'declined':
+          background = const Color(0xFFFFE8E8);
+          foreground = const Color(0xFFB3261E);
+          icon = Icons.cancel_outlined;
+          label = '$typeName Declined';
+          break;
+        default:
+          background = const Color(0xFFFFF3DC);
+          foreground = const Color(0xFF9A6700);
+          icon = Icons.sync;
+          label = '$typeName $returnStatus';
+      }
+    } else {
+      switch (status) {
+        case 'confirmed':
+          background = const Color(0xFFE7F5EC);
+          foreground = const Color(0xFF237A43);
+          icon = Icons.check_circle_outline;
+          label = 'Confirmed';
+          break;
 
-      case 'shipped':
-        background = const Color(0xFFE8F0FF);
-        foreground = const Color(0xFF315EAA);
-        icon = Icons.local_shipping_outlined;
-        label = 'Shipped';
-        break;
+        case 'processing':
+          background = const Color(0xFFFFF3DC);
+          foreground = const Color(0xFF9A6700);
+          icon = Icons.sync;
+          label = 'Processing';
+          break;
 
-      case 'delivered':
-        background = const Color(0xFFE6F5ED);
-        foreground = const Color(0xFF217548);
-        icon = Icons.done_all;
-        label = 'Delivered';
-        break;
+        case 'shipped':
+          background = const Color(0xFFE8F0FF);
+          foreground = const Color(0xFF315EAA);
+          icon = Icons.local_shipping_outlined;
+          label = 'Shipped';
+          break;
 
-      case 'cancelled':
-      case 'canceled':
-        background = const Color(0xFFFFE8E8);
-        foreground = const Color(0xFFB3261E);
-        icon = Icons.cancel_outlined;
-        label = 'Cancelled';
-        break;
+        case 'delivered':
+          background = const Color(0xFFE6F5ED);
+          foreground = const Color(0xFF217548);
+          icon = Icons.done_all;
+          label = 'Delivered';
+          break;
 
-      default:
-        background = const Color(0xFFFFF1DE);
-        foreground = const Color(0xFF9A5B00);
-        icon = Icons.schedule_outlined;
-        label = 'Pending';
+        case 'cancelled':
+        case 'canceled':
+          background = const Color(0xFFFFE8E8);
+          foreground = const Color(0xFFB3261E);
+          icon = Icons.cancel_outlined;
+          label = 'Cancelled';
+          break;
+
+        default:
+          background = const Color(0xFFFFF1DE);
+          foreground = const Color(0xFF9A5B00);
+          icon = Icons.schedule_outlined;
+          label = 'Pending';
+      }
     }
 
     return Container(

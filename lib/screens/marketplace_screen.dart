@@ -661,6 +661,48 @@ class _MarketplaceScreenState extends State<MarketplaceScreen> {
                   tradition: tradition,
                   verified: verified,
                 ),
+                const SizedBox(height: 18),
+                Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+                  decoration: BoxDecoration(
+                    color: const Color(0xFF162B25),
+                    borderRadius: BorderRadius.circular(14),
+                    border: Border.all(color: const Color(0xFF264A3F)),
+                  ),
+                  child: const Row(
+                    children: [
+                      Icon(
+                        Icons.verified_user_outlined,
+                        color: Color(0xFFE0A95E),
+                        size: 20,
+                      ),
+                      SizedBox(width: 12),
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              '7-Day Easy Return & Replacement Guarantee',
+                              style: TextStyle(
+                                fontSize: 13,
+                                fontWeight: FontWeight.w800,
+                                color: Color(0xFFF2FAF6),
+                              ),
+                            ),
+                            SizedBox(height: 2),
+                            Text(
+                              'Doorstep reverse pickup • Replacement or full refund guaranteed',
+                              style: TextStyle(
+                                fontSize: 11,
+                                color: Color(0xFFA7BBB4),
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
                 if (notes.isNotEmpty) ...[
                   const SizedBox(height: 18),
                   const Text(
