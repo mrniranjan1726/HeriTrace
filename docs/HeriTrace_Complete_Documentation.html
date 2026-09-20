@@ -1,0 +1,171 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>HeriTrace - Executive Technical Documentation & System Dossier</title>
+  <script src="https://www.gstatic.com/antigravity/web/dev/tailwindcss.min.js"></script>
+  <style>
+    @media print {
+      body { background: white !important; color: black !important; }
+      .no-print { display: none !important; }
+      .page-break { page-break-before: always; }
+    }
+  </style>
+</head>
+<body class="bg-slate-50 text-slate-800 font-sans antialiased">
+
+  <!-- Floating Print Button -->
+  <div class="fixed bottom-6 right-6 no-print z-50">
+    <button onclick="window.print()" class="px-5 py-3 rounded-full bg-orange-700 hover:bg-orange-800 text-white font-bold shadow-2xl flex items-center gap-2 border border-orange-500 transition-all hover:scale-105">
+      <span>🖨️</span> Print / Save as PDF
+    </button>
+  </div>
+
+  <div class="max-w-5xl mx-auto my-10 p-8 md:p-14 bg-white rounded-3xl shadow-xl border border-slate-200 space-y-12">
+    
+    <!-- Title Cover -->
+    <div class="border-b border-slate-200 pb-8 flex flex-col md:flex-row justify-between items-start md:items-center gap-6">
+      <div>
+        <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-orange-100 text-orange-800 text-xs font-bold uppercase tracking-wider mb-3">
+          Executive Technical Report & Presentation Manual
+        </div>
+        <h1 class="text-4xl font-extrabold text-slate-900 tracking-tight">HeriTrace</h1>
+        <p class="text-lg text-slate-600 font-medium mt-1">AI-Powered Digital Business Manager & Heritage Marketplace for Artisans</p>
+      </div>
+      <div class="p-4 bg-orange-50 border border-orange-200 rounded-2xl text-xs space-y-1 text-slate-700 font-mono">
+        <div><strong>Status:</strong> Production Ready</div>
+        <div><strong>Web App:</strong> <a href="https://heritrace.web.app" class="text-orange-700 underline">heritrace.web.app</a></div>
+        <div><strong>Backend API:</strong> <a href="https://heritrace-api.onrender.com" class="text-orange-700 underline">heritrace-api.onrender.com</a></div>
+        <div><strong>Version:</strong> 1.0.0+1 (Release)</div>
+      </div>
+    </div>
+
+    <!-- 1. Executive Summary -->
+    <section class="space-y-4">
+      <h2 class="text-2xl font-bold text-slate-900 flex items-center gap-3 border-l-4 border-orange-600 pl-3">
+        1. Executive Summary & Problem Solved
+      </h2>
+      <p class="text-slate-700 leading-relaxed">
+        India represents one of the largest craft traditions in the world with over 7 million master craftspeople. However, intermediaries pocket <strong>50%–80%</strong> of retail value, rural artisans face severe digital literacy barriers, and machine replicas flood the market. 
+      </p>
+      <div class="grid grid-cols-1 md:grid-cols-3 gap-4 pt-2">
+        <div class="p-4 bg-slate-50 border border-slate-200 rounded-xl">
+          <div class="text-orange-700 font-bold text-sm">🎙️ Voice-First AI</div>
+          <p class="text-xs text-slate-600 mt-1">Allows low-literacy rural artisans to speak in regional languages to auto-generate full e-commerce catalogs.</p>
+        </div>
+        <div class="p-4 bg-slate-50 border border-slate-200 rounded-xl">
+          <div class="text-orange-700 font-bold text-sm">📸 Computer Vision Studio</div>
+          <p class="text-xs text-slate-600 mt-1">Transforms cluttered workshop photos into professional studio-lit e-commerce product mockups.</p>
+        </div>
+        <div class="p-4 bg-slate-50 border border-slate-200 rounded-xl">
+          <div class="text-orange-700 font-bold text-sm">⚖️ Living Wage Guarantee</div>
+          <p class="text-xs text-slate-600 mt-1">Mathematical formula guaranteeing artisans retain 70%–85% direct margin with zero middlemen markup.</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- 2. System Architecture -->
+    <section class="space-y-4">
+      <h2 class="text-2xl font-bold text-slate-900 flex items-center gap-3 border-l-4 border-orange-600 pl-3">
+        2. High-Level System Architecture
+      </h2>
+      <p class="text-slate-700 leading-relaxed">
+        HeriTrace utilizes a <strong>Hybrid 3-Tier Reactive Architecture</strong>:
+      </p>
+      <div class="p-6 bg-slate-900 text-slate-100 rounded-2xl space-y-4 font-mono text-xs">
+        <div class="text-amber-400 font-bold">1. CLIENT TIER (Flutter / Dart)</div>
+        <div class="pl-4 border-l-2 border-slate-700 text-slate-300">
+          • Cross-platform compilation to Native Android APK, iOS IPA, and Responsive Web<br>
+          • Native Speech-to-Text integration via OS audio pipelines<br>
+          • State management using Provider, StreamBuilders, and ValueNotifiers for 60 FPS scrolling
+        </div>
+
+        <div class="text-amber-400 font-bold">2. CLOUD INFRASTRUCTURE (Google Firebase BaaS)</div>
+        <div class="pl-4 border-l-2 border-slate-700 text-slate-300">
+          • Firebase Authentication: Role-Based Access Control (Artisan vs. Customer vs. Admin)<br>
+          • Cloud Firestore: Real-time NoSQL streaming via WebSockets with Collection Groups<br>
+          • Firebase Storage: Secure cloud buckets for high-res craft photography & GI proofs<br>
+          • Firestore Security Rules: Server-side validation enforcing atomic auction bidding rules
+        </div>
+
+        <div class="text-amber-400 font-bold">3. AI & PAYMENT MICROSERVICE (FastAPI on Render)</div>
+        <div class="pl-4 border-l-2 border-slate-700 text-slate-300">
+          • Computer Vision: Pillow image pipeline (EXIF orientation, background cleanup, contrast)<br>
+          • Multilingual NLP: Regional transcript translation into English, Hindi, Odia, Bengali<br>
+          • Living Wage Pricing: Material cost and labor formula ensuring artisan prosperity<br>
+          • Razorpay Gateway: Order creation and cryptographic HMAC-SHA256 signature verification
+        </div>
+      </div>
+    </section>
+
+    <!-- 3. Key Technical Innovations -->
+    <section class="space-y-4">
+      <h2 class="text-2xl font-bold text-slate-900 flex items-center gap-3 border-l-4 border-orange-600 pl-3">
+        3. Key Technical Modules
+      </h2>
+      
+      <div class="space-y-4">
+        <div class="p-5 border border-slate-200 rounded-xl bg-white space-y-2">
+          <h3 class="font-bold text-slate-900 text-base">A. Dual-Platform Speech-to-Text Pipeline</h3>
+          <p class="text-sm text-slate-600 leading-relaxed">
+            Android 11+ (API 30+) blocks speech recognition discovery unless explicitly declared. HeriTrace configures package visibility with <code>android.speech.RecognitionService</code> and runtime microphone permissions on Android, while providing Apple Speech Framework declarations in iOS <code>Info.plist</code>. Available for customer voice search and artisan oral storytelling.
+          </p>
+        </div>
+
+        <div class="p-5 border border-slate-200 rounded-xl bg-white space-y-2">
+          <h3 class="font-bold text-slate-900 text-base">B. Live Synchronized Auction House</h3>
+          <p class="text-sm text-slate-600 leading-relaxed">
+            Rare masterworks are auctioned in real time. Backed by Cloud Firestore WebSocket subscriptions, bids update in sub-second latency across all clients with anti-sniping countdown timers and atomic security rules preventing concurrent bid overwriting.
+          </p>
+        </div>
+
+        <div class="p-5 border border-slate-200 rounded-xl bg-white space-y-2">
+          <h3 class="font-bold text-slate-900 text-base">C. 7-Day Return, Replacement & Exchange Suite</h3>
+          <p class="text-sm text-slate-600 leading-relaxed">
+            Complete reverse logistics lifecycle: customer selection (return, exchange, replace), reason logging, doorstep pickup address confirmation, real-time alert dispatch to artisan atelier portal, single-tap artisan authorization, and automatic refund/dispatch settlement.
+          </p>
+        </div>
+      </div>
+    </section>
+
+    <!-- 4. Deployment Credentials -->
+    <section class="space-y-4 pt-4 border-t border-slate-200">
+      <h2 class="text-2xl font-bold text-slate-900 flex items-center gap-3 border-l-4 border-orange-600 pl-3">
+        4. Official Project Links & Access
+      </h2>
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
+        <div class="p-4 bg-slate-50 border border-slate-200 rounded-xl space-y-1">
+          <div class="font-bold text-slate-800">🌐 Live Web Application</div>
+          <div><a href="https://heritrace.web.app" class="text-orange-700 font-semibold underline">https://heritrace.web.app</a></div>
+          <div class="text-xs text-slate-500">Accessible immediately from any browser.</div>
+        </div>
+
+        <div class="p-4 bg-slate-50 border border-slate-200 rounded-xl space-y-1">
+          <div class="font-bold text-slate-800">⚡ Python API Microservice</div>
+          <div><a href="https://heritrace-api.onrender.com" class="text-orange-700 font-semibold underline">https://heritrace-api.onrender.com</a></div>
+          <div class="text-xs text-slate-500">FastAPI backend deployed on Render.</div>
+        </div>
+
+        <div class="p-4 bg-slate-50 border border-slate-200 rounded-xl space-y-1">
+          <div class="font-bold text-slate-800">📱 Release Android APK</div>
+          <div class="text-slate-700 font-mono text-xs">D:\HeriTrace_Real_MVP\HeriTrace_Release.apk</div>
+          <div class="text-xs text-slate-500">Compiled release build (59.6 MB).</div>
+        </div>
+
+        <div class="p-4 bg-slate-50 border border-slate-200 rounded-xl space-y-1">
+          <div class="font-bold text-slate-800">💻 GitHub Source Code</div>
+          <div><a href="https://github.com/mrniranjan1726/HeriTrace" class="text-orange-700 font-semibold underline">github.com/mrniranjan1726/HeriTrace</a></div>
+          <div class="text-xs text-slate-500">Branch 'main' up to date.</div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Footer -->
+    <div class="border-t border-slate-200 pt-6 text-center text-xs text-slate-400 font-mono">
+      HeriTrace • Craft • Connect • Preserve • Generated September 20, 2026
+    </div>
+
+  </div>
+
+</body>
+</html>
