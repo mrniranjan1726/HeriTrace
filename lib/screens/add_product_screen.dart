@@ -47,6 +47,7 @@ class _AddProductScreenState extends State<AddProductScreen> {
 
   bool _isListening = false;
   bool _speechAvailable = false;
+  TextEditingController? _activeVoiceController;
   bool _isGenerating = false;
   bool _isPublishing = false;
 
@@ -79,6 +80,9 @@ class _AddProductScreenState extends State<AddProductScreen> {
 
           setState(() {
             _isListening = status == 'listening';
+            if (!_isListening) {
+              _activeVoiceController = null;
+            }
           });
         },
         onError: (error) {
@@ -86,6 +90,7 @@ class _AddProductScreenState extends State<AddProductScreen> {
 
           setState(() {
             _isListening = false;
+            _activeVoiceController = null;
           });
         },
       );
@@ -104,32 +109,50 @@ class _AddProductScreenState extends State<AddProductScreen> {
     }
   }
 
-  Future<void> _startListening() async {
+  Future<void> _startListening({TextEditingController? targetController}) async {
+    final controller = targetController ?? _descriptionController;
+
+    if (!_speechAvailable) {
+      await _initializeSpeech();
+    }
+
     if (!_speechAvailable) {
       _showMessage(
-        'Speech recognition is not available on this device/browser.',
+        'Speech recognition is unavailable or microphone permission was denied. Please allow microphone permission in Settings.',
+        isError: true,
       );
       return;
     }
 
     try {
+      setState(() {
+        _activeVoiceController = controller;
+        _isListening = true;
+      });
+
+      _showMessage('Listening... Speak now 🎙️');
+
       await _speech.listen(
         onResult: (result) {
           if (!mounted) return;
 
           setState(() {
-            _descriptionController.text = result.recognizedWords;
+            controller.text = result.recognizedWords;
           });
         },
+        listenOptions: stt.SpeechListenOptions(
+          listenMode: stt.ListenMode.dictation,
+          partialResults: true,
+          cancelOnError: false,
+        ),
       );
-
-      if (!mounted) return;
-
-      setState(() {
-        _isListening = true;
-      });
     } catch (_) {
-      _showMessage('Could not start microphone.');
+      if (!mounted) return;
+      setState(() {
+        _isListening = false;
+        _activeVoiceController = null;
+      });
+      _showMessage('Could not start microphone.', isError: true);
     }
   }
 
@@ -142,6 +165,7 @@ class _AddProductScreenState extends State<AddProductScreen> {
 
     setState(() {
       _isListening = false;
+      _activeVoiceController = null;
     });
   }
 
@@ -400,11 +424,15 @@ class _AddProductScreenState extends State<AddProductScreen> {
     );
   }
 
-  void _showMessage(String message) {
+  void _showMessage(String message, {bool isError = false}) {
     if (!mounted) return;
 
     ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(content: Text(message), behavior: SnackBarBehavior.floating),
+      SnackBar(
+        content: Text(message),
+        backgroundColor: isError ? const Color(0xFFD32F2F) : null,
+        behavior: SnackBarBehavior.floating,
+      ),
     );
   }
 
@@ -414,6 +442,7 @@ class _AddProductScreenState extends State<AddProductScreen> {
     required String hint,
     int maxLines = 1,
     TextInputType? keyboardType,
+    Widget? suffixIcon,
   }) {
     return TextField(
       controller: controller,
@@ -425,6 +454,7 @@ class _AddProductScreenState extends State<AddProductScreen> {
         hintText: hint,
         labelStyle: const TextStyle(color: Colors.white70),
         hintStyle: const TextStyle(color: Colors.white30),
+        suffixIcon: suffixIcon,
         filled: true,
         fillColor: const Color(0xFF171A22),
         border: OutlineInputBorder(
@@ -546,13 +576,18 @@ class _AddProductScreenState extends State<AddProductScreen> {
     );
   }
 
-  Widget _buildSpeechButton() {
+  Widget _buildSpeechButton({TextEditingController? controller}) {
+    final target = controller ?? _descriptionController;
+    final isThisActive = _isListening && _activeVoiceController == target;
+
     return IconButton(
-      tooltip: 'Voice input',
-      onPressed: _isListening ? _stopListening : _startListening,
+      tooltip: isThisActive ? 'Stop listening' : 'Voice input',
+      onPressed: isThisActive
+          ? _stopListening
+          : () => _startListening(targetController: target),
       icon: Icon(
-        _isListening ? Icons.mic : Icons.mic_none,
-        color: _isListening ? const Color(0xFFFF5252) : const Color(0xFFB388FF),
+        isThisActive ? Icons.mic : Icons.mic_none,
+        color: isThisActive ? const Color(0xFFFF5252) : const Color(0xFFB388FF),
       ),
     );
   }
@@ -632,7 +667,7 @@ class _AddProductScreenState extends State<AddProductScreen> {
                   hintText: 'Describe your product...',
                   labelStyle: const TextStyle(color: Colors.white70),
                   hintStyle: const TextStyle(color: Colors.white30),
-                  suffixIcon: _buildSpeechButton(),
+                  suffixIcon: _buildSpeechButton(controller: _descriptionController),
                   filled: true,
                   fillColor: const Color(0xFF171A22),
                   border: OutlineInputBorder(
@@ -695,6 +730,7 @@ class _AddProductScreenState extends State<AddProductScreen> {
                 label: 'Heritage Story',
                 hint: 'Share the tradition behind this product',
                 maxLines: 3,
+                suffixIcon: _buildSpeechButton(controller: _storyController),
               ),
 
               const SizedBox(height: 20),

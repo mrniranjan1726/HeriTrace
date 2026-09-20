@@ -7,6 +7,7 @@ import 'package:flutter_animate/flutter_animate.dart';
 
 import 'customer_cart_screen.dart';
 import 'customer_orders_screen.dart';
+import 'package:speech_to_text/speech_to_text.dart' as stt;
 import '../widgets/support_chatbot.dart';
 
 class CustomerHomeScreen extends StatefulWidget {
@@ -33,6 +34,8 @@ class _CustomerHomeScreenState extends State<CustomerHomeScreen>
   final TextEditingController _searchController = TextEditingController();
   final PageController _carouselPageController = PageController();
   late final ScrollController _scrollController;
+  final stt.SpeechToText _speech = stt.SpeechToText();
+  bool _speechAvailable = false;
 
   Timer? _searchHintTimer;
   Timer? _carouselTimer;
@@ -256,6 +259,9 @@ class _CustomerHomeScreenState extends State<CustomerHomeScreen>
     _searchController.dispose();
     _carouselPageController.dispose();
     _scrollController.dispose();
+    try {
+      _speech.stop();
+    } catch (_) {}
     super.dispose();
   }
 
@@ -1780,8 +1786,383 @@ class _CustomerHomeScreenState extends State<CustomerHomeScreen>
     );
   }
 
-  void _triggerVoiceSearch() {
-    _showMessage('Listening... State product name or craft region 🎙️');
+  Future<void> _triggerVoiceSearch() async {
+    try {
+      if (!_speechAvailable) {
+        final available = await _speech.initialize(
+          onStatus: (status) {},
+          onError: (error) {},
+        );
+        _speechAvailable = available;
+      }
+    } catch (_) {
+      _speechAvailable = false;
+    }
+
+    if (!_speechAvailable) {
+      _showMessage(
+        'Microphone permission is required for voice search. Please enable it in Settings.',
+        isError: true,
+      );
+      return;
+    }
+
+    if (!mounted) return;
+    _showVoiceSearchModal();
+  }
+
+  void _showVoiceSearchModal() {
+    String recognizedText = '';
+    bool isListening = false;
+    bool hasAutoStarted = false;
+
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      builder: (modalContext) {
+        return StatefulBuilder(
+          builder: (context, setModalState) {
+            void startListening() async {
+              try {
+                setModalState(() {
+                  isListening = true;
+                });
+                await _speech.listen(
+                  onResult: (result) {
+                    setModalState(() {
+                      recognizedText = result.recognizedWords;
+                    });
+                    if (result.finalResult && recognizedText.trim().isNotEmpty) {
+                      Future.delayed(const Duration(milliseconds: 500), () {
+                        if (modalContext.mounted && Navigator.canPop(modalContext)) {
+                          Navigator.pop(modalContext);
+                          _applyVoiceSearch(recognizedText.trim());
+                        }
+                      });
+                    }
+                  },
+                  listenOptions: stt.SpeechListenOptions(
+                    listenMode: stt.ListenMode.confirmation,
+                    partialResults: true,
+                    cancelOnError: false,
+                  ),
+                );
+              } catch (_) {
+                setModalState(() {
+                  isListening = false;
+                });
+              }
+            }
+
+            void stopListening() async {
+              try {
+                await _speech.stop();
+              } catch (_) {}
+              setModalState(() {
+                isListening = false;
+              });
+            }
+
+            if (!hasAutoStarted) {
+              hasAutoStarted = true;
+              WidgetsBinding.instance.addPostFrameCallback((_) {
+                startListening();
+              });
+            }
+
+            final suggestions = [
+              'Silk Saree',
+              'Blue Pottery',
+              'Brass Idol',
+              'Kashmiri Shawl',
+              'Resort Shirt',
+              'Woodcraft Box',
+            ];
+
+            return Container(
+              padding: EdgeInsets.only(
+                left: 20,
+                right: 20,
+                top: 14,
+                bottom: MediaQuery.of(context).viewInsets.bottom + 24,
+              ),
+              decoration: const BoxDecoration(
+                color: Color(0xFFFAF7F2),
+                borderRadius: BorderRadius.vertical(top: Radius.circular(28)),
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.black26,
+                    blurRadius: 20,
+                    offset: Offset(0, -4),
+                  ),
+                ],
+              ),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  // Handle pill
+                  Container(
+                    width: 44,
+                    height: 5,
+                    decoration: BoxDecoration(
+                      color: Colors.grey.shade400,
+                      borderRadius: BorderRadius.circular(10),
+                    ),
+                  ),
+                  const SizedBox(height: 16),
+
+                  // Header row
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      Row(
+                        children: [
+                          Container(
+                            padding: const EdgeInsets.all(8),
+                            decoration: BoxDecoration(
+                              color: _lightGoldWash,
+                              borderRadius: BorderRadius.circular(12),
+                              border: Border.all(color: _heirloomGold.withOpacity(0.4)),
+                            ),
+                            child: const Icon(
+                              Icons.mic_rounded,
+                              color: _primaryTerracotta,
+                              size: 22,
+                            ),
+                          ),
+                          const SizedBox(width: 10),
+                          const Text(
+                            'Voice Search',
+                            style: TextStyle(
+                              fontSize: 18,
+                              fontWeight: FontWeight.w800,
+                              color: _textPrimary,
+                              letterSpacing: 0.2,
+                            ),
+                          ),
+                        ],
+                      ),
+                      IconButton(
+                        icon: const Icon(Icons.close_rounded, color: _textSecondary),
+                        onPressed: () {
+                          stopListening();
+                          Navigator.pop(modalContext);
+                        },
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 20),
+
+                  // Animated glowing Mic button
+                  GestureDetector(
+                    onTap: () {
+                      if (isListening) {
+                        stopListening();
+                      } else {
+                        startListening();
+                      }
+                    },
+                    child: Stack(
+                      alignment: Alignment.center,
+                      children: [
+                        if (isListening)
+                          Container(
+                            width: 86,
+                            height: 86,
+                            decoration: BoxDecoration(
+                              shape: BoxShape.circle,
+                              color: _primaryTerracotta.withOpacity(0.15),
+                            ),
+                          ).animate(onPlay: (c) => c.repeat(reverse: true))
+                           .scale(begin: const Offset(1, 1), end: const Offset(1.22, 1.22), duration: 700.ms),
+                        Container(
+                          width: 66,
+                          height: 66,
+                          decoration: BoxDecoration(
+                            shape: BoxShape.circle,
+                            gradient: const LinearGradient(
+                              colors: [_primaryTerracotta, _accentCrimson],
+                              begin: Alignment.topLeft,
+                              end: Alignment.bottomRight,
+                            ),
+                            boxShadow: [
+                              BoxShadow(
+                                color: _primaryTerracotta.withOpacity(0.4),
+                                blurRadius: 14,
+                                offset: const Offset(0, 4),
+                              ),
+                            ],
+                          ),
+                          child: Icon(
+                            isListening ? Icons.mic : Icons.mic_none,
+                            color: Colors.white,
+                            size: 32,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                  const SizedBox(height: 14),
+
+                  Text(
+                    isListening
+                        ? 'Listening... Speak your craft name'
+                        : 'Tap the microphone to speak',
+                    style: TextStyle(
+                      fontSize: 14,
+                      fontWeight: isListening ? FontWeight.w700 : FontWeight.w500,
+                      color: isListening ? _primaryTerracotta : _textSecondary,
+                    ),
+                  ),
+                  const SizedBox(height: 16),
+
+                  // Real-time Recognized words preview card
+                  Container(
+                    width: double.infinity,
+                    constraints: const BoxConstraints(minHeight: 64),
+                    padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                    decoration: BoxDecoration(
+                      color: Colors.white,
+                      borderRadius: BorderRadius.circular(16),
+                      border: Border.all(
+                        color: recognizedText.isNotEmpty
+                            ? _heirloomGold
+                            : _cardBorder,
+                      ),
+                      boxShadow: const [
+                        BoxShadow(
+                          color: Color(0x0A000000),
+                          blurRadius: 8,
+                          offset: Offset(0, 2),
+                        ),
+                      ],
+                    ),
+                    alignment: Alignment.center,
+                    child: Text(
+                      recognizedText.isNotEmpty
+                          ? '“$recognizedText”'
+                          : 'Try saying: "Handmade Silk Saree" or "Blue Pottery"',
+                      textAlign: TextAlign.center,
+                      style: TextStyle(
+                        fontSize: recognizedText.isNotEmpty ? 17 : 13,
+                        fontWeight: recognizedText.isNotEmpty ? FontWeight.w700 : FontWeight.normal,
+                        color: recognizedText.isNotEmpty ? _textPrimary : _textSecondary,
+                        fontStyle: recognizedText.isNotEmpty ? FontStyle.normal : FontStyle.italic,
+                      ),
+                    ),
+                  ),
+                  const SizedBox(height: 16),
+
+                  // Popular suggestion chips
+                  Align(
+                    alignment: Alignment.centerLeft,
+                    child: Text(
+                      'Popular Voice Searches',
+                      style: TextStyle(
+                        fontSize: 12,
+                        fontWeight: FontWeight.w700,
+                        color: _textSecondary.withOpacity(0.8),
+                        letterSpacing: 0.3,
+                      ),
+                    ),
+                  ),
+                  const SizedBox(height: 8),
+                  Wrap(
+                    spacing: 8,
+                    runSpacing: 8,
+                    children: suggestions.map((s) {
+                      return InkWell(
+                        onTap: () {
+                          stopListening();
+                          Navigator.pop(modalContext);
+                          _applyVoiceSearch(s);
+                        },
+                        borderRadius: BorderRadius.circular(16),
+                        child: Container(
+                          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                          decoration: BoxDecoration(
+                            color: Colors.white,
+                            borderRadius: BorderRadius.circular(16),
+                            border: Border.all(color: _cardBorder),
+                          ),
+                          child: Row(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              const Icon(Icons.search, size: 14, color: _primaryTerracotta),
+                              const SizedBox(width: 4),
+                              Text(
+                                s,
+                                style: const TextStyle(
+                                  fontSize: 12,
+                                  fontWeight: FontWeight.w600,
+                                  color: _textPrimary,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                      );
+                    }).toList(),
+                  ),
+                  const SizedBox(height: 20),
+
+                  // Action Button
+                  if (recognizedText.trim().isNotEmpty)
+                    SizedBox(
+                      width: double.infinity,
+                      height: 48,
+                      child: ElevatedButton.icon(
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: _primaryTerracotta,
+                          foregroundColor: Colors.white,
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(14),
+                          ),
+                          elevation: 2,
+                        ),
+                        onPressed: () {
+                          stopListening();
+                          Navigator.pop(modalContext);
+                          _applyVoiceSearch(recognizedText.trim());
+                        },
+                        icon: const Icon(Icons.search, size: 20),
+                        label: Text(
+                          'Search for "$recognizedText"',
+                          style: const TextStyle(
+                            fontSize: 15,
+                            fontWeight: FontWeight.bold,
+                          ),
+                          overflow: TextOverflow.ellipsis,
+                        ),
+                      ),
+                    ),
+                ],
+              ),
+            );
+          },
+        );
+      },
+    ).whenComplete(() {
+      try {
+        _speech.stop();
+      } catch (_) {}
+    });
+  }
+
+  void _applyVoiceSearch(String query) {
+    setState(() {
+      _searchController.text = query;
+      _searchQuery = query.toLowerCase();
+    });
+    _showMessage('Showing crafts for "$query" 🎙️');
+    if (_scrollController.hasClients && _scrollController.offset < 200) {
+      _scrollController.animateTo(
+        320,
+        duration: const Duration(milliseconds: 400),
+        curve: Curves.easeOut,
+      );
+    }
   }
 
   bool _categoryMatches(String productCategory, String selectedCategory) {
