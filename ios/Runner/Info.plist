@@ -7,7 +7,7 @@
 	<key>CFBundleDevelopmentRegion</key>
 	<string>$(DEVELOPMENT_LANGUAGE)</string>
 	<key>CFBundleDisplayName</key>
-	<string>Heritrace</string>
+	<string>HeriTrace</string>
 	<key>CFBundleExecutable</key>
 	<string>$(EXECUTABLE_NAME)</string>
 	<key>CFBundleIdentifier</key>
@@ -66,5 +66,13 @@
 		<string>UIInterfaceOrientationLandscapeLeft</string>
 		<string>UIInterfaceOrientationLandscapeRight</string>
 	</array>
+	<key>NSMicrophoneUsageDescription</key>
+	<string>HeriTrace requires microphone access for voice search and recording craft stories.</string>
+	<key>NSSpeechRecognitionUsageDescription</key>
+	<string>HeriTrace uses speech recognition to convert your voice into search queries and product stories.</string>
+	<key>NSCameraUsageDescription</key>
+	<string>HeriTrace requires access to the camera to capture product photos and authenticate crafts.</string>
+	<key>NSPhotoLibraryUsageDescription</key>
+	<string>HeriTrace requires access to your photo library to select craft photos.</string>
 </dict>
 </plist>
