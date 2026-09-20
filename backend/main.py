@@ -77,9 +77,11 @@ class CatalogRequest(BaseModel):
 
 
 class PricingRequest(BaseModel):
-    product_name: str
+    product_name: str = ""
+    name: str = ""
     category: str = "Handicraft"
     cost_price: float = 0
+    cost: float = 0
     quality: str = "standard"
     demand: str = "normal"
 
@@ -396,8 +398,9 @@ def recommend_price(
     request: PricingRequest,
 ):
 
+    prod_name = (request.product_name or request.name or "Handicraft").strip()
     cost = max(
-        float(request.cost_price),
+        float(request.cost_price or request.cost or 0),
         0,
     )
 
@@ -477,32 +480,24 @@ def recommend_price(
 
     return {
         "success": True,
-        "product_name":
-            request.product_name,
-        "category":
-            request.category,
-        "cost_price":
-            round(cost, 2),
-        "recommended_price":
-            round(recommended, 2),
-        "minimum_price":
-            round(minimum_price, 2),
-        "premium_price":
-            round(premium_price, 2),
-        "estimated_profit":
-            round(profit, 2),
-        "estimated_margin":
-            round(margin, 2),
-        "quality":
-            request.quality,
-        "demand":
-            request.demand,
-        "explanation":
-            (
-                "The recommended price considers "
-                "production cost, product quality, "
-                "and current demand level."
-            ),
+        "product_name": prod_name,
+        "name": prod_name,
+        "category": request.category,
+        "cost_price": round(cost, 2),
+        "cost": round(cost, 2),
+        "recommended_price": round(recommended, 2),
+        "suggested_price": round(recommended, 2),
+        "minimum_price": round(minimum_price, 2),
+        "premium_price": round(premium_price, 2),
+        "estimated_profit": round(profit, 2),
+        "estimated_margin": round(margin, 2),
+        "quality": request.quality,
+        "demand": request.demand,
+        "explanation": (
+            "The recommended price considers "
+            "production cost, product quality, "
+            "and current demand level."
+        ),
     }
 
 
